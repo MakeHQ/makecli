@@ -2,8 +2,9 @@
 Go + github.com/spf13/cobra
 
 <directory>
-cmd/            - Cobra 子命令层（root、version）
+cmd/            - Cobra 子命令层（root、version、configure）
 internal/build/ - 构建元数据（Version/Date，由 ldflags 注入）
+internal/config/ - 凭证管理（读写 ~/.make/credentials，INI 格式）
 </directory>
 
 <config>
