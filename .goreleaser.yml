@@ -1,0 +1,59 @@
+version: 2
+
+# -------------------------------------------------------------------------
+# 构建前置：确保依赖整洁
+# -------------------------------------------------------------------------
+before:
+  hooks:
+    - go mod tidy
+
+# -------------------------------------------------------------------------
+# 多平台构建：通过 ldflags 注入版本信息（与 Makefile 保持一致）
+# -------------------------------------------------------------------------
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/MakeHQ/makecli/internal/build.Version={{.Version}}
+      - -X github.com/MakeHQ/makecli/internal/build.Date={{.Date}}
+
+# -------------------------------------------------------------------------
+# 归档格式：unix 用 tar.gz，windows 用 zip
+# -------------------------------------------------------------------------
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+# -------------------------------------------------------------------------
+# 校验和：方便 Homebrew formula 验证完整性
+# -------------------------------------------------------------------------
+checksum:
+  name_template: "checksums.txt"
+
+# -------------------------------------------------------------------------
+# Homebrew Tap：GoReleaser 自动向 homebrew-makecli 推送更新后的 formula
+# -------------------------------------------------------------------------
+brews:
+  - name: makecli
+    repository:
+      owner: MakeHQ
+      name: homebrew-makecli
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/MakeHQ/makecli
+    description: "makecli — make your workflow faster"
+    license: MIT
+    install: |
+      bin.install "makecli"
+    test: |
+      system "#{bin}/makecli version"
