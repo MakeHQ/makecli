@@ -16,8 +16,30 @@ var rootCmd = &cobra.Command{
 	Short: "makecli — make your workflow faster",
 }
 
+// usageTemplate 对齐 GitHub CLI 风格：段落标题全大写
+const usageTemplate = `{{with .Long}}{{. | trimRightSpace}}
+
+{{end}}USAGE
+  {{.UseLine}}{{if .HasAvailableSubCommands}} [command]{{end}}
+{{if .HasAvailableSubCommands}}
+AVAILABLE COMMANDS
+{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}  {{rpad .Name .NamePadding }} {{.Short}}
+{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+FLAGS
+{{.LocalFlags.FlagUsages | trimRightSpace}}
+{{end}}{{if .HasAvailableInheritedFlags}}
+GLOBAL FLAGS
+{{.InheritedFlags.FlagUsages | trimRightSpace}}
+{{end}}{{if .HasExample}}
+EXAMPLES
+{{.Example}}
+{{end}}{{if .HasAvailableSubCommands}}
+Use "{{.CommandPath}} [command] --help" for more information about a command.
+{{end}}`
+
 // Execute 是程序入口，由 main.go 调用
 func Execute(version, buildDate string) error {
+	rootCmd.SetUsageTemplate(usageTemplate)
 	rootCmd.AddCommand(newVersionCmd(version, buildDate))
 	rootCmd.AddCommand(newConfigureCmd())
 	return rootCmd.Execute()
