@@ -6,10 +6,13 @@ LDFLAGS := -s -w \
 	-X $(MODULE)/internal/build.Version=$(VERSION) \
 	-X $(MODULE)/internal/build.Date=$(DATE)
 
-.PHONY: build clean
+.PHONY: build vet clean
 
 build:
 	go build -ldflags "$(LDFLAGS)" -o bin/makecli .
+
+vet:
+	go vet ./...
 
 clean:
 	rm -rf bin/
