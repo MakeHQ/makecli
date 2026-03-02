@@ -8,10 +8,11 @@ internal/config/ - 凭证管理（读写 ~/.make/credentials，INI 格式）
 </directory>
 
 <config>
-go.mod            - 模块声明，module github.com/MakeHQ/makecli
-Makefile          - 本地构建脚本，通过 ldflags 注入版本和日期
-.goreleaser.yml   - 发布流水线：多平台构建 + 自动推送 Homebrew Tap
-.github/workflows/release.yml - 打 v* tag 时触发 GoReleaser 发布
+go.mod                         - 模块声明，module github.com/MakeHQ/makecli
+Makefile                       - 本地构建脚本（build/test/vet/clean），通过 ldflags 注入版本和日期
+.goreleaser.yml                - 发布流水线：多平台构建 + 自动推送 Homebrew Tap
+.github/workflows/release.yml  - 打 v* tag 时触发 GoReleaser 发布
+.github/workflows/ci.yml       - push main / PR 时运行 vet + test
 </config>
 
 ## 发布流程
