@@ -45,7 +45,7 @@ func runAppDelete(name, profile, server string) error {
 		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
 	}
 
-	if err := api.New(server, p.AccessToken).DeleteApp(name); err != nil {
+	if err := api.New(server, p.AccessToken, DebugMode).DeleteApp(name); err != nil {
 		return err
 	}
 

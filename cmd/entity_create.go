@@ -62,7 +62,7 @@ func runEntityCreate(name, app, fieldsFile, profile, server string) error {
 		}
 	}
 
-	if err := api.New(server, p.AccessToken).CreateEntity(name, app, fields); err != nil {
+	if err := api.New(server, p.AccessToken, DebugMode).CreateEntity(name, app, fields); err != nil {
 		return err
 	}
 

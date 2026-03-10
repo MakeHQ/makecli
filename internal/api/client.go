@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -22,13 +23,20 @@ type Client struct {
 	baseURL    string
 	token      string
 	httpClient *http.Client
+	debug      bool
 }
 
 // New 创建新的 API 客户端，30s 超时
-func New(baseURL, token string) *Client {
+// 可选第三个参数启用 debug 模式
+func New(baseURL, token string, debug ...bool) *Client {
+	debugMode := false
+	if len(debug) > 0 {
+		debugMode = debug[0]
+	}
 	return &Client{
 		baseURL: baseURL,
 		token:   token,
+		debug:   debugMode,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
@@ -197,6 +205,17 @@ func (c *Client) do(target, path string, body, result any) error {
 	data, err := json.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("序列化请求失败: %w", err)
+	}
+
+	// debug 模式：输出 curl 命令
+	if c.debug {
+		fmt.Fprintf(os.Stderr, "\n=== DEBUG: HTTP Request ===\n")
+		fmt.Fprintf(os.Stderr, "curl -X POST '%s%s' \\\n", c.baseURL, path)
+		fmt.Fprintf(os.Stderr, "  -H 'Content-Type: application/json' \\\n")
+		fmt.Fprintf(os.Stderr, "  -H 'Authorization: Bearer %s' \\\n", c.token)
+		fmt.Fprintf(os.Stderr, "  -H 'X-Make-Target: %s' \\\n", target)
+		fmt.Fprintf(os.Stderr, "  -d '%s'\n", string(data))
+		fmt.Fprintf(os.Stderr, "==========================\n\n")
 	}
 
 	req, err := http.NewRequest(http.MethodPost, c.baseURL+path, bytes.NewReader(data))

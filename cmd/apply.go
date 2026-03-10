@@ -186,7 +186,7 @@ func applyResources(resources []ResourceManifest, server, token string) error {
 		}
 	}
 
-	client := api.New(server, token)
+	client := api.New(server, token, DebugMode)
 
 	// 先创建 App
 	for _, app := range apps {

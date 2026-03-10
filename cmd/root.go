@@ -11,6 +11,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// DebugMode 全局调试模式标志，从命令行读取
+var DebugMode bool
+
 var rootCmd = &cobra.Command{
 	Use:   "makecli",
 	Short: "makecli — make your workflow faster",
@@ -41,6 +44,8 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.
 func Execute(version, buildDate string) error {
 	rootCmd.SetUsageTemplate(usageTemplate)
 	rootCmd.SetErrPrefix("error:")
+	rootCmd.PersistentFlags().BoolVar(&DebugMode, "debug", false, "enable debug mode to show curl output")
+	rootCmd.PersistentFlags().MarkHidden("debug")
 	rootCmd.AddCommand(newVersionCmd(version, buildDate))
 	rootCmd.AddCommand(newConfigureCmd())
 	rootCmd.AddCommand(newApplyCmd())

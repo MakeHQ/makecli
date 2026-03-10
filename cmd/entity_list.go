@@ -54,7 +54,7 @@ func runEntityList(app, entityName, profile, server string, size int) error {
 		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
 	}
 
-	client := api.New(server, p.AccessToken)
+	client := api.New(server, p.AccessToken, DebugMode)
 	if entityName != "" {
 		return showEntity(client, app, entityName)
 	}

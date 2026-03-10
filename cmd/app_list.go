@@ -48,7 +48,7 @@ func runAppList(profile, server string, size int) error {
 		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
 	}
 
-	apps, total, err := api.New(server, p.AccessToken).ListApps(0, size)
+	apps, total, err := api.New(server, p.AccessToken, DebugMode).ListApps(0, size)
 	if err != nil {
 		return err
 	}

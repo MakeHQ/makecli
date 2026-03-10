@@ -37,3 +37,19 @@ access_token = AKIAUXFQEUPWGEXEYDUW
 ```bash
 makecli version
 ```
+
+## 开发指南
+### 编译
+```
+make
+```
+
+### 单元测试
+```
+make test
+```
+
+### 安装本地
+```
+make local
+```

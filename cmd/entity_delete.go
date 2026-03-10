@@ -46,7 +46,7 @@ func runEntityDelete(name, app, profile, server string) error {
 		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
 	}
 
-	if err := api.New(server, p.AccessToken).DeleteEntity(name, app); err != nil {
+	if err := api.New(server, p.AccessToken, DebugMode).DeleteEntity(name, app); err != nil {
 		return err
 	}
 

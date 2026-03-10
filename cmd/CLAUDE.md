@@ -2,7 +2,7 @@
 > L2 | 父级: /CLAUDE.md
 
 ## 成员清单
-root.go:             根命令入口，挂载所有子命令，对外暴露 Execute(version, date)
+root.go:             根命令入口，挂载所有子命令，对外暴露 Execute(version, date)；定义全局 --debug 标志（隐藏，用于调试，输出 curl 命令）
 version.go:          version 子命令，格式化版本输出（参考 GitHub CLI 模式）
 version_test.go:     覆盖 formatVersion / changelogURL 的纯函数测试
 configure.go:        configure 子命令，交互式写入 ~/.make/credentials，支持 --profile
@@ -23,7 +23,7 @@ entity_delete.go:        entity delete 子命令，调用 Meta Server API（Make
 entity_delete_test.go:   覆盖 runEntityDelete 的单元测试（成功/无凭证/API错误/未知profile），用 httptest 隔离网络
 entity_list.go:         entity list 子命令，无 arg 时列出 app 下全部 entity（NAME/VERSION），有 arg 时显示指定 entity 详情（name/app/version + fields 表格）；支持 --app（必选）/ --profile / --server
 entity_list_test.go:    覆盖 runEntityList 的单元测试（列表/空列表/具体entity/无字段/无凭证/API错误/未知profile），用 httptest 隔离网络
-app_apply.go:        app apply 子命令，从 YAML 文件/目录批量创建资源，支持多文档 YAML（`---` 分隔）和目录扫描（只扫一层）；支持 --profile 和 --server
+app_apply.go:        app apply 子命令，从 YAML 文件/目录批量创建资源，支持多文档 YAML（`---` 分隔）和目录扫描（只扫一层）；支持 --profile 和 --server；使用 api.New(server, token, DebugMode) 传递 DebugMode 状态到 API 客户端
 app_apply_test.go:    app apply 子命令的单元测试，覆盖单文件、多文档、目录扫描、错误场景
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
