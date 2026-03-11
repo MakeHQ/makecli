@@ -1,7 +1,7 @@
 /**
- * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/ListApps）、fmt、os、github.com/olekukonko/tablewriter、github.com/spf13/cobra
+ * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/ListApps）、fmt、os、github.com/olekukonko/tablewriter、github.com/spf13/cobra、cmd/output 辅助
  * [OUTPUT]: 对外提供 newAppListCmd 函数
- * [POS]: cmd/app 的 list 子命令，分页列出 org 下全部 App，tablewriter 渲染
+ * [POS]: cmd/app 的 list 子命令，分页列出 org 下全部 App，支持 table/json 输出
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 
@@ -21,23 +21,29 @@ func newAppListCmd() *cobra.Command {
 	var profile string
 	var server string
 	var size int
+	var output string
 
 	cmd := &cobra.Command{
 		Use:          "list",
 		Short:        "List all apps",
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runAppList(profile, server, size)
+			return runAppList(profile, server, size, output)
 		},
 	}
 
 	cmd.Flags().StringVar(&profile, "profile", "default", "credentials profile to use")
 	cmd.Flags().StringVar(&server, "server", defaultMetaServer, "Meta Server base URL")
 	cmd.Flags().IntVar(&size, "size", 20, "number of apps per page")
+	cmd.Flags().StringVar(&output, "output", outputTable, "output format (table|json)")
 	return cmd
 }
 
-func runAppList(profile, server string, size int) error {
+func runAppList(profile, server string, size int, output string) error {
+	if err := validateOutputFormat(output); err != nil {
+		return err
+	}
+
 	creds, err := config.Load()
 	if err != nil {
 		return fmt.Errorf("加载凭证失败: %w", err)
@@ -51,6 +57,17 @@ func runAppList(profile, server string, size int) error {
 	apps, total, err := api.New(server, p.AccessToken, DebugMode).ListApps(0, size)
 	if err != nil {
 		return err
+	}
+
+	if output == outputJSON {
+		return writeJSON(map[string]any{
+			"data": apps,
+			"pagination": map[string]int{
+				"count": len(apps),
+				"size":  size,
+				"total": total,
+			},
+		})
 	}
 
 	if len(apps) == 0 {

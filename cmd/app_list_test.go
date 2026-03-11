@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -34,7 +35,7 @@ func TestRunAppList(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
 
-		if err := runAppList("default", srv.URL, 20); err != nil {
+		if err := runAppList("default", srv.URL, 20, outputTable); err != nil {
 			t.Fatalf("runAppList: %v", err)
 		}
 	})
@@ -51,14 +52,47 @@ func TestRunAppList(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
 
-		if err := runAppList("default", srv.URL, 20); err != nil {
+		if err := runAppList("default", srv.URL, 20, outputTable); err != nil {
 			t.Fatalf("runAppList: %v", err)
+		}
+	})
+
+	t.Run("prints json when requested", func(t *testing.T) {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			json.NewEncoder(w).Encode(map[string]any{
+				"code": 200, "message": "success",
+				"data": []map[string]any{
+					{"name": "项目A", "type": "Make.App",
+						"meta":       map[string]any{"version": "1.0.0"},
+						"properties": map[string]any{"code": "ProjectA"}},
+				},
+				"pagination": map[string]any{"page": 1, "size": 20, "total": 1},
+			})
+		}))
+		defer srv.Close()
+		t.Setenv("HOME", t.TempDir())
+		saveDefaultToken(t)
+
+		output := captureStdout(t, func() {
+			if err := runAppList("default", srv.URL, 20, outputJSON); err != nil {
+				t.Fatalf("runAppList json: %v", err)
+			}
+		})
+
+		if !strings.Contains(output, "\"data\"") {
+			t.Fatalf("expected JSON output, got %q", output)
+		}
+		if !strings.Contains(output, "\"count\": 1") {
+			t.Fatalf("expected pagination count in JSON output, got %q", output)
+		}
+		if strings.Contains(output, "Showing 1 of 1 apps") {
+			t.Fatalf("expected JSON-only output, got %q", output)
 		}
 	})
 
 	t.Run("fails without credentials", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
-		if err := runAppList("default", "http://localhost", 20); err == nil {
+		if err := runAppList("default", "http://localhost", 20, outputTable); err == nil {
 			t.Fatal("expected error for missing credentials")
 		}
 	})
@@ -71,8 +105,14 @@ func TestRunAppList(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
 
-		if err := runAppList("default", srv.URL, 20); err == nil {
+		if err := runAppList("default", srv.URL, 20, outputTable); err == nil {
 			t.Fatal("expected error on API failure")
+		}
+	})
+
+	t.Run("fails on unsupported output format", func(t *testing.T) {
+		if err := runAppList("default", "http://localhost", 20, "xml"); err == nil {
+			t.Fatal("expected error for unsupported output format")
 		}
 	})
 }

@@ -42,6 +42,40 @@ access_token = AKIAUXFQEUPWGEXEYDUW
 makecli version
 ```
 
+### 列出 App
+```bash
+# 默认表格输出
+makecli app list
+
+# JSON 输出
+makecli app list --output json
+```
+
+`app list` 支持的输出格式：
+
+- `--output table` 默认表格输出
+- `--output json` 输出 `data` 和 `pagination`，便于脚本或 AI Agent 消费
+
+### 列出 Entity
+```bash
+# 列出指定 app 下的全部 entity（默认表格输出）
+makecli entity --app TODO list
+
+# 以 JSON 输出 entity 列表
+makecli entity --app TODO list --output json
+
+# 查看单个 entity 详情
+makecli entity --app TODO list Task
+
+# 以 JSON 输出单个 entity 详情
+makecli entity --app TODO list Task --output json
+```
+
+`entity list` 支持的输出格式：
+
+- `--output table` 默认表格/详情文本输出
+- `--output json` 列表模式输出 `data` 和 `pagination`，详情模式输出单个 `data` 对象
+
 ## 开发指南
 ### 编译
 ```

@@ -1,7 +1,7 @@
 /**
- * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/ListEntities/GetEntity）、fmt、os、github.com/olekukonko/tablewriter、github.com/spf13/cobra
+ * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/ListEntities/GetEntity）、fmt、os、github.com/olekukonko/tablewriter、github.com/spf13/cobra、cmd/output 辅助
  * [OUTPUT]: 对外提供 newEntityListCmd 函数
- * [POS]: cmd/entity 的 list 子命令，无 arg 时分页列出 app 下全部 entity，有 arg 时显示指定 entity 详情（name + fields）
+ * [POS]: cmd/entity 的 list 子命令，无 arg 时分页列出 app 下全部 entity，有 arg 时显示指定 entity 详情，支持 table/json 输出
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 
@@ -21,6 +21,7 @@ func newEntityListCmd() *cobra.Command {
 	var profile string
 	var server string
 	var size int
+	var output string
 
 	cmd := &cobra.Command{
 		Use:          "list [entity-name]",
@@ -33,17 +34,22 @@ func newEntityListCmd() *cobra.Command {
 			if len(args) == 1 {
 				entityName = args[0]
 			}
-			return runEntityList(app, entityName, profile, server, size)
+			return runEntityList(app, entityName, profile, server, size, output)
 		},
 	}
 
 	cmd.Flags().StringVar(&profile, "profile", "default", "credentials profile to use")
 	cmd.Flags().StringVar(&server, "server", defaultMetaServer, "Meta Server base URL")
 	cmd.Flags().IntVar(&size, "size", 20, "number of entities per page")
+	cmd.Flags().StringVar(&output, "output", outputTable, "output format (table|json)")
 	return cmd
 }
 
-func runEntityList(app, entityName, profile, server string, size int) error {
+func runEntityList(app, entityName, profile, server string, size int, output string) error {
+	if err := validateOutputFormat(output); err != nil {
+		return err
+	}
+
 	creds, err := config.Load()
 	if err != nil {
 		return fmt.Errorf("加载凭证失败: %w", err)
@@ -56,15 +62,26 @@ func runEntityList(app, entityName, profile, server string, size int) error {
 
 	client := api.New(server, p.AccessToken, DebugMode)
 	if entityName != "" {
-		return showEntity(client, app, entityName)
+		return showEntity(client, app, entityName, output)
 	}
-	return listEntities(client, app, size)
+	return listEntities(client, app, size, output)
 }
 
-func listEntities(client *api.Client, app string, size int) error {
+func listEntities(client *api.Client, app string, size int, output string) error {
 	entities, total, err := client.ListEntities(app, 0, size)
 	if err != nil {
 		return err
+	}
+
+	if output == outputJSON {
+		return writeJSON(map[string]any{
+			"data": entities,
+			"pagination": map[string]int{
+				"count": len(entities),
+				"size":  size,
+				"total": total,
+			},
+		})
 	}
 
 	if len(entities) == 0 {
@@ -87,10 +104,16 @@ func listEntities(client *api.Client, app string, size int) error {
 	return nil
 }
 
-func showEntity(client *api.Client, app, name string) error {
+func showEntity(client *api.Client, app, name, output string) error {
 	entity, err := client.GetEntity(app, name)
 	if err != nil {
 		return err
+	}
+
+	if output == outputJSON {
+		return writeJSON(map[string]any{
+			"data": entity,
+		})
 	}
 
 	version, _ := entity.Meta["version"].(string)
