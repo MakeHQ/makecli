@@ -196,6 +196,25 @@ properties:
 		}
 	})
 
+	t.Run("fails on empty YAML file", func(t *testing.T) {
+		srv := newMockMetaForApply(t, 200, "success")
+		defer srv.Close()
+		t.Setenv("HOME", t.TempDir())
+		saveDefaultTokenForApply(t)
+		testDir := t.TempDir()
+
+		yamlFile := writeYAMLFileForApply(t, testDir, "empty.yaml", "")
+
+		err := runAppApply(yamlFile, "default", srv.URL)
+		if err == nil {
+			t.Fatal("expected error for empty YAML file")
+		}
+		want := "error: no objects passed to apply"
+		if err.Error() != want {
+			t.Fatalf("expected %q, got %q", want, err.Error())
+		}
+	})
+
 	t.Run("fails on invalid YAML", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultTokenForApply(t)
