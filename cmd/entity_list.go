@@ -54,6 +54,9 @@ func runEntityList(app, entityName, profile, server string, page, size int, outp
 	if page < 1 {
 		return fmt.Errorf("page must be greater than or equal to 1")
 	}
+	if size < 1 {
+		return fmt.Errorf("size must be greater than or equal to 1")
+	}
 
 	creds, err := config.Load()
 	if err != nil {

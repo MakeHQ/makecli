@@ -134,6 +134,12 @@ func TestRunAppList(t *testing.T) {
 		}
 	})
 
+	t.Run("fails when size is less than 1", func(t *testing.T) {
+		if err := runAppList("default", "http://localhost", 1, 0, outputTable); err == nil {
+			t.Fatal("expected error for invalid size")
+		}
+	})
+
 	t.Run("fails on unsupported output format", func(t *testing.T) {
 		if err := runAppList("default", "http://localhost", 1, 20, "xml"); err == nil {
 			t.Fatal("expected error for unsupported output format")
