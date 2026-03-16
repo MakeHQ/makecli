@@ -3,6 +3,7 @@ module github.com/MakeHQ/makecli
 go 1.22.2
 
 require (
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/olekukonko/tablewriter v1.1.3
 	github.com/spf13/cobra v1.10.2
 	gopkg.in/yaml.v3 v3.0.1
