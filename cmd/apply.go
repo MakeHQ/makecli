@@ -1,7 +1,7 @@
 /**
- * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/CreateAppWithCode/CreateEntity）、fmt、os、io/fs、path/filepath、gopkg.in/yaml.v3、github.com/spf13/cobra
+ * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/CreateAppWithCode/CreateEntity/GetApp/GetEntity/UpdateEntity）、fmt、os、path/filepath、strings、gopkg.in/yaml.v3、github.com/spf13/cobra
  * [OUTPUT]: 对外提供 newApplyCmd 函数
- * [POS]: cmd 模块的顶层 apply 命令，从 YAML 文件/目录批量创建资源
+ * [POS]: cmd 模块的顶层 apply 命令，从 YAML 文件/目录批量应用资源（create-or-update 语义）
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 
@@ -188,55 +188,65 @@ func applyResources(resources []ResourceManifest, server, token string) error {
 
 	client := api.New(server, token, DebugMode)
 
-	// 先创建 App
+	// 先应用 App
 	for _, app := range apps {
-		if err := applyApp(app, client); err != nil {
-			return fmt.Errorf("创建 App '%s' 失败: %w", app.Name, err)
+		action, err := applyApp(app, client)
+		if err != nil {
+			return fmt.Errorf("应用 App '%s' 失败: %w", app.Name, err)
 		}
-		fmt.Printf("App '%s' applied\n", app.Name)
+		if action != "" {
+			fmt.Printf("App '%s' %s\n", app.Name, action)
+		}
 	}
 
-	// 再创建 Entity
+	// 再应用 Entity
 	for _, entity := range entities {
-		if err := applyEntity(entity, client); err != nil {
-			return fmt.Errorf("创建 Entity '%s' 失败: %w", entity.Name, err)
+		action, err := applyEntity(entity, client)
+		if err != nil {
+			return fmt.Errorf("应用 Entity '%s' 失败: %w", entity.Name, err)
 		}
-		fmt.Printf("Entity '%s' applied\n", entity.Name)
+		fmt.Printf("Entity '%s' %s\n", entity.Name, action)
 	}
 
 	return nil
 }
 
-// applyApp 从清单创建 App
-func applyApp(manifest ResourceManifest, client *api.Client) error {
+// applyApp 从清单应用 App：不存在则创建，已存在则跳过（App 无 update API）
+func applyApp(manifest ResourceManifest, client *api.Client) (string, error) {
 	code, _ := manifest.Properties["code"].(string)
 	if code == "" {
 		code = manifest.Name
 	}
-	return client.CreateAppWithCode(manifest.Name, code)
+
+	existing, err := client.GetApp(manifest.Name)
+	if err == nil && existing.Name != "" {
+		return "", nil // App 无 update API，静默跳过
+	}
+
+	return "created", client.CreateAppWithCode(manifest.Name, code)
 }
 
-// applyEntity 从清单创建 Entity
-func applyEntity(manifest ResourceManifest, client *api.Client) error {
+// applyEntity 从清单应用 Entity：不存在则创建，已存在则更新
+func applyEntity(manifest ResourceManifest, client *api.Client) (string, error) {
 	if manifest.App == "" {
-		return fmt.Errorf("Entity 缺少 app 字段")
+		return "", fmt.Errorf("Entity 缺少 app 字段")
 	}
 
 	fieldsRaw, ok := manifest.Properties["fields"]
 	if !ok {
-		return fmt.Errorf("Entity 缺少 fields 字段")
+		return "", fmt.Errorf("Entity 缺少 fields 字段")
 	}
 
 	fieldsSlice, ok := fieldsRaw.([]any)
 	if !ok {
-		return fmt.Errorf("fields 必须为数组")
+		return "", fmt.Errorf("fields 必须为数组")
 	}
 
 	fields := make([]api.Field, len(fieldsSlice))
 	for i, f := range fieldsSlice {
 		fieldMap, ok := f.(map[string]any)
 		if !ok {
-			return fmt.Errorf("field[%d] 必须为对象", i)
+			return "", fmt.Errorf("field[%d] 必须为对象", i)
 		}
 		fields[i] = api.Field{
 			Name:       getField(fieldMap, "name").(string),
@@ -246,7 +256,12 @@ func applyEntity(manifest ResourceManifest, client *api.Client) error {
 		}
 	}
 
-	return client.CreateEntity(manifest.Name, manifest.App, fields)
+	existing, err := client.GetEntity(manifest.App, manifest.Name)
+	if err == nil && existing.Name != "" {
+		return "updated", client.UpdateEntity(manifest.Name, manifest.App, fields)
+	}
+
+	return "created", client.CreateEntity(manifest.Name, manifest.App, fields)
 }
 
 // getField 安全获取字段值

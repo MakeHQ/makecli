@@ -72,8 +72,9 @@ properties:
 		if err := runAppApply(yamlFile, "default", srv.URL); err != nil {
 			t.Fatalf("runAppApply multi-doc: %v", err)
 		}
-		if callCount != 2 {
-			t.Fatalf("expected 2 API calls, got %d", callCount)
+		// 每个 App: 1x GetApp + 1x CreateApp = 2 calls，2 个 App = 4 calls
+		if callCount != 4 {
+			t.Fatalf("expected 4 API calls, got %d", callCount)
 		}
 	})
 
@@ -114,8 +115,9 @@ properties:
 		if err := runAppApply(testDir, "default", srv.URL); err != nil {
 			t.Fatalf("runAppApply dir: %v", err)
 		}
-		if callCount != 2 {
-			t.Fatalf("expected 2 API calls, got %d", callCount)
+		// 1x GetApp + 1x CreateApp + 1x GetEntity + 1x CreateEntity = 4 calls
+		if callCount != 4 {
+			t.Fatalf("expected 4 API calls, got %d", callCount)
 		}
 	})
 

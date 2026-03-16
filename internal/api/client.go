@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 bytes、encoding/json、fmt、net/http、time
- * [OUTPUT]: 对外提供 Client 类型、New 构造函数、App / Field / Entity / EntityProperties 类型、CreateApp / CreateAppWithCode / ListApps / DeleteApp / CreateEntity / ListEntities / GetEntity 方法
+ * [OUTPUT]: 对外提供 Client 类型、New 构造函数、App / Field / Entity / EntityProperties 类型、CreateApp / CreateAppWithCode / ListApps / DeleteApp / GetApp / CreateEntity / ListEntities / GetEntity / UpdateEntity / DeleteEntity 方法
  * [POS]: internal/api 的核心，封装 Make Meta Service 的 HTTP 调用
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -186,6 +186,37 @@ func (c *Client) GetEntity(app, name string) (*Entity, error) {
 		return nil, fmt.Errorf("API 错误 [%d]: %s", result.Code, result.Message)
 	}
 	return &result.Data, nil
+}
+
+// GetApp 调用 MakeService.GetResource 获取指定 App
+func (c *Client) GetApp(name string) (*App, error) {
+	reqBody := map[string]any{"name": name}
+	var result struct {
+		Code    int    `json:"code"`
+		Message string `json:"msg"`
+		Data    App    `json:"data"`
+	}
+	if err := c.do("MakeService.GetResource", "/meta/v1/app", reqBody, &result); err != nil {
+		return nil, err
+	}
+	if result.Code != 200 {
+		return nil, fmt.Errorf("API 错误 [%d]: %s", result.Code, result.Message)
+	}
+	return &result.Data, nil
+}
+
+// UpdateEntity 调用 MakeService.UpdateResource 更新指定 Entity
+func (c *Client) UpdateEntity(name, app string, fields []Field) error {
+	body := map[string]any{
+		"name": name,
+		"type": "Make.Entity",
+		"app":  app,
+		"meta": map[string]any{"version": "1.0.0"},
+		"properties": map[string]any{
+			"fields": fields,
+		},
+	}
+	return c.post("MakeService.UpdateResource", "/meta/v1/entity", body)
 }
 
 // DeleteEntity 调用 MakeService.DeleteResource 删除指定 Entity

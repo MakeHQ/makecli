@@ -23,7 +23,7 @@ entity_delete.go:        entity delete 子命令，调用 Meta Server API（Make
 entity_delete_test.go:   覆盖 runEntityDelete 的单元测试（成功/无凭证/API错误/未知profile），用 httptest 隔离网络
 entity_list.go:         entity list 子命令，无 arg 时分页列出 app 下全部 entity（NAME/VERSION），有 arg 时显示指定 entity 详情（name/app/version + fields 表格）；支持 --app（必选）/ --profile / --server / --page / --size
 entity_list_test.go:    覆盖 runEntityList 的单元测试（列表/空列表/具体entity/无字段/无凭证/API错误/未知profile），用 httptest 隔离网络
-app_apply.go:        app apply 子命令，从 YAML 文件/目录批量创建资源，支持多文档 YAML（`---` 分隔）和目录扫描（只扫一层）；支持 --profile 和 --server；使用 api.New(server, token, DebugMode) 传递 DebugMode 状态到 API 客户端
-app_apply_test.go:    app apply 子命令的单元测试，覆盖单文件、多文档、目录扫描、错误场景
+apply.go:            apply 子命令，从 YAML 文件/目录批量应用资源（create-or-update 语义：App 不存在则创建/已存在则跳过，Entity 不存在则创建/已存在则调用 UpdateResource）；支持多文档 YAML 和目录扫描；支持 --profile / --server
+apply_test.go:       apply 子命令的单元测试，覆盖单文件、多文档、目录扫描、错误场景
 
 [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
