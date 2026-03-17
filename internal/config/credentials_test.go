@@ -34,7 +34,7 @@ func writeTempINI(t *testing.T, content string) *os.File {
 func TestParseINI(t *testing.T) {
 	t.Run("empty file", func(t *testing.T) {
 		f := writeTempINI(t, "")
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		creds, err := parseINI(f)
 		if err != nil {
@@ -47,7 +47,7 @@ func TestParseINI(t *testing.T) {
 
 	t.Run("single profile", func(t *testing.T) {
 		f := writeTempINI(t, "[default]\naccess_token = mytoken\n")
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		creds, err := parseINI(f)
 		if err != nil {
@@ -61,7 +61,7 @@ func TestParseINI(t *testing.T) {
 	t.Run("multiple profiles", func(t *testing.T) {
 		content := "[default]\naccess_token = token1\n\n[work]\naccess_token = token2\n"
 		f := writeTempINI(t, content)
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		creds, err := parseINI(f)
 		if err != nil {
@@ -78,7 +78,7 @@ func TestParseINI(t *testing.T) {
 	t.Run("skips comments and blank lines", func(t *testing.T) {
 		content := "# top comment\n\n[default]\n; inline comment\naccess_token = tok\n"
 		f := writeTempINI(t, content)
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		creds, err := parseINI(f)
 		if err != nil {
@@ -92,7 +92,7 @@ func TestParseINI(t *testing.T) {
 	t.Run("ignores keys outside any section", func(t *testing.T) {
 		content := "access_token = orphan\n[default]\naccess_token = real\n"
 		f := writeTempINI(t, content)
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		creds, err := parseINI(f)
 		if err != nil {

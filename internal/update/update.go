@@ -56,7 +56,7 @@ func CheckLatest(currentVersion string) (*Release, bool, error) {
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to check for updates: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, false, fmt.Errorf("failed to check for updates: HTTP %d", resp.StatusCode)
@@ -85,14 +85,14 @@ func Apply(release *Release) error {
 	if err != nil {
 		return err
 	}
-	defer os.Remove(archivePath)
+	defer func() { _ = os.Remove(archivePath) }()
 
 	// 从归档中提取二进制
 	newBinaryPath, err := extractBinary(archivePath)
 	if err != nil {
 		return err
 	}
-	defer os.Remove(newBinaryPath)
+	defer func() { _ = os.Remove(newBinaryPath) }()
 
 	return replaceBinary(newBinaryPath)
 }
@@ -123,7 +123,7 @@ func download(url string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to download: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to download: HTTP %d", resp.StatusCode)
@@ -133,10 +133,10 @@ func download(url string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer tmp.Close()
+	defer func() { _ = tmp.Close() }()
 
 	if _, err := io.Copy(tmp, resp.Body); err != nil {
-		os.Remove(tmp.Name())
+		_ = os.Remove(tmp.Name())
 		return "", fmt.Errorf("failed to save download: %w", err)
 	}
 
@@ -149,13 +149,13 @@ func extractBinary(archivePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	gz, err := gzip.NewReader(f)
 	if err != nil {
 		return "", fmt.Errorf("failed to decompress: %w", err)
 	}
-	defer gz.Close()
+	defer func() { _ = gz.Close() }()
 
 	tr := tar.NewReader(gz)
 	for {
@@ -179,14 +179,14 @@ func extractBinary(archivePath string) (string, error) {
 		}
 
 		if _, err := io.Copy(tmp, tr); err != nil {
-			tmp.Close()
-			os.Remove(tmp.Name())
+			_ = tmp.Close()
+			_ = os.Remove(tmp.Name())
 			return "", fmt.Errorf("failed to extract binary: %w", err)
 		}
-		tmp.Close()
+		_ = tmp.Close()
 
 		if err := os.Chmod(tmp.Name(), 0755); err != nil {
-			os.Remove(tmp.Name())
+			_ = os.Remove(tmp.Name())
 			return "", err
 		}
 
@@ -233,7 +233,7 @@ func replaceBinary(newBinaryPath string) error {
 
 	// 步骤 2: 备份当前二进制
 	if err := os.Rename(exe, backupPath); err != nil {
-		os.Remove(stagePath)
+		_ = os.Remove(stagePath)
 		return fmt.Errorf("failed to backup current binary: %w", err)
 	}
 
@@ -245,7 +245,7 @@ func replaceBinary(newBinaryPath string) error {
 	}
 
 	// 步骤 4: 清理备份（best-effort）
-	os.Remove(backupPath)
+	_ = os.Remove(backupPath)
 
 	return nil
 }
@@ -257,8 +257,8 @@ func checkWritable(dir string) error {
 	if err != nil {
 		return err
 	}
-	f.Close()
-	os.Remove(tmp)
+	_ = f.Close()
+	_ = os.Remove(tmp)
 	return nil
 }
 
@@ -268,13 +268,13 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 
 	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	_, err = io.Copy(out, in)
 	return err

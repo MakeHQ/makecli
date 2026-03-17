@@ -29,7 +29,7 @@ func newUpdateCmd() *cobra.Command {
 func runUpdate(cmd *cobra.Command) error {
 	currentVersion := build.Version
 
-	fmt.Fprintf(cmd.OutOrStdout(), "Checking for updates...\n")
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Checking for updates...\n")
 
 	release, newer, err := update.CheckLatest(currentVersion)
 	if err != nil {
@@ -37,18 +37,18 @@ func runUpdate(cmd *cobra.Command) error {
 	}
 
 	if !newer {
-		fmt.Fprintf(cmd.OutOrStdout(), "Already up to date (%s)\n", release.TagName)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Already up to date (%s)\n", release.TagName)
 		return nil
 	}
 
-	fmt.Fprintf(cmd.OutOrStdout(), "Updating makecli: %s → %s\n",
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Updating makecli: %s → %s\n",
 		formatCurrentVersion(currentVersion), release.TagName)
 
 	if err := update.Apply(release); err != nil {
 		return err
 	}
 
-	fmt.Fprintf(cmd.OutOrStdout(), "Updated makecli: %s → %s\n",
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Updated makecli: %s → %s\n",
 		formatCurrentVersion(currentVersion), release.TagName)
 
 	return nil

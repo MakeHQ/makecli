@@ -183,9 +183,10 @@ func applyResources(resources []ResourceManifest, server, token string) error {
 	apps := []ResourceManifest{}
 	entities := []ResourceManifest{}
 	for _, r := range resources {
-		if r.Type == "Make.App" {
+		switch r.Type {
+		case "Make.App":
 			apps = append(apps, r)
-		} else if r.Type == "Make.Entity" {
+		case "Make.Entity":
 			entities = append(entities, r)
 		}
 	}
@@ -233,12 +234,12 @@ func applyApp(manifest ResourceManifest, client *api.Client) (string, error) {
 // applyEntity 从清单应用 Entity：不存在则创建，已存在则更新
 func applyEntity(manifest ResourceManifest, client *api.Client) (string, error) {
 	if manifest.App == "" {
-		return "", fmt.Errorf("Entity 缺少 app 字段")
+		return "", fmt.Errorf("entity 缺少 app 字段")
 	}
 
 	fieldsRaw, ok := manifest.Properties["fields"]
 	if !ok {
-		return "", fmt.Errorf("Entity 缺少 fields 字段")
+		return "", fmt.Errorf("entity 缺少 fields 字段")
 	}
 
 	fieldsSlice, ok := fieldsRaw.([]any)

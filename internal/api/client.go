@@ -261,7 +261,7 @@ func (c *Client) do(target, path string, body, result any) error {
 	if err != nil {
 		return fmt.Errorf("请求失败: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
 		return fmt.Errorf("无效的响应格式: %w", err)

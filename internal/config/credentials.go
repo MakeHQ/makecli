@@ -53,7 +53,7 @@ func Load() (Credentials, error) {
 	if err != nil {
 		return nil, fmt.Errorf("读取 credentials 失败: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	return parseINI(f)
 }
@@ -120,7 +120,7 @@ func Save(creds Credentials) error {
 	if err != nil {
 		return fmt.Errorf("写入 credentials 失败: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	// default profile 优先输出，其余按字典序
 	order := []string{}
@@ -136,10 +136,10 @@ func Save(creds Credentials) error {
 	w := bufio.NewWriter(f)
 	for i, name := range order {
 		if i > 0 {
-			fmt.Fprintln(w)
+			_, _ = fmt.Fprintln(w)
 		}
-		fmt.Fprintf(w, "[%s]\n", name)
-		fmt.Fprintf(w, "access_token = %s\n", creds[name].AccessToken)
+		_, _ = fmt.Fprintf(w, "[%s]\n", name)
+		_, _ = fmt.Fprintf(w, "access_token = %s\n", creds[name].AccessToken)
 	}
 
 	return w.Flush()
