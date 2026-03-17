@@ -209,7 +209,7 @@ properties:
 		if err == nil {
 			t.Fatal("expected error for empty YAML file")
 		}
-		want := "error: no objects passed to apply"
+		want := "no objects passed to apply"
 		if err.Error() != want {
 			t.Fatalf("expected %q, got %q", want, err.Error())
 		}

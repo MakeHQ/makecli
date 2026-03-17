@@ -77,7 +77,7 @@ func runAppApply(path, profile, server string) error {
 	}
 
 	if len(resources) == 0 {
-		return fmt.Errorf("error: no objects passed to apply")
+		return fmt.Errorf("no objects passed to apply")
 	}
 
 	if err := applyResources(resources, server, p.AccessToken); err != nil {
