@@ -1,3 +1,5 @@
+version: "2"
+
 run:
   timeout: 3m
 
@@ -11,9 +13,8 @@ linters:
     - ineffassign   # 无效赋值检测
     - gocritic      # 代码风格与性能建议
     - misspell      # 拼写检查
-
-linters-settings:
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - performance
+  settings:
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
