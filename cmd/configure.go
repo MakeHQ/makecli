@@ -14,7 +14,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/MakeHQ/makecli/internal/config"
+	"github.com/qfeius/makecli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -23,7 +23,7 @@ func newConfigureCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:          "configure",
-		Short:        "Configure MakeHQ credentials",
+		Short:        "Configure MakeCLI credentials",
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runConfigure(profile)
@@ -44,7 +44,7 @@ func runConfigure(profile string) error {
 
 	fmt.Printf("Configuring profile [%s]\n", profile)
 
-	token, err := prompt("MakeHQ Access Token", current.AccessToken)
+	token, err := prompt("MakeCLI Access Token", current.AccessToken)
 	if err != nil {
 		return err
 	}

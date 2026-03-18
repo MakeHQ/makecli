@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MakeHQ/makecli/internal/api"
-	"github.com/MakeHQ/makecli/internal/config"
+	"github.com/qfeius/makecli/internal/api"
+	"github.com/qfeius/makecli/internal/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )

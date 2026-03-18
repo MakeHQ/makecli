@@ -1,4 +1,4 @@
-MODULE  := github.com/MakeHQ/makecli
+MODULE  := github.com/qfeius/makecli
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "DEV")
 DATE    := $(shell date -u +%Y-%m-%d)
 LOCAL_BIN ?= $(HOME)/.local/bin

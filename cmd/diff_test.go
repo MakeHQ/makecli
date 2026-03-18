@@ -15,8 +15,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MakeHQ/makecli/internal/api"
-	"github.com/MakeHQ/makecli/internal/config"
+	"github.com/qfeius/makecli/internal/api"
+	"github.com/qfeius/makecli/internal/config"
 )
 
 // ---------------------------------- diff 测试 ----------------------------------

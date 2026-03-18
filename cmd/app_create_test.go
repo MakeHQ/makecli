@@ -13,7 +13,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/MakeHQ/makecli/internal/config"
+	"github.com/qfeius/makecli/internal/config"
 )
 
 func TestRunAppCreate(t *testing.T) {

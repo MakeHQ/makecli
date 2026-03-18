@@ -22,8 +22,8 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X github.com/MakeHQ/makecli/internal/build.Version={{.Version}}
-      - -X github.com/MakeHQ/makecli/internal/build.Date={{.Date}}
+      - -X github.com/qfeius/makecli/internal/build.Version={{.Version}}
+      - -X github.com/qfeius/makecli/internal/build.Date={{.Date}}
 
 # -------------------------------------------------------------------------
 # 归档格式：unix 用 tar.gz，windows 用 zip
@@ -47,10 +47,10 @@ checksum:
 brews:
   - name: makecli
     repository:
-      owner: MakeHQ
+      owner: qfeius
       name: homebrew-makecli
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
-    homepage: https://github.com/MakeHQ/makecli
+    homepage: https://github.com/qfeius/makecli
     description: "makecli — agentic development platform cli"
     license: MIT
     install: |

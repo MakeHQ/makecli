@@ -3,7 +3,7 @@ makecli 是 make 平台管理的命令行工具
 
 ## 安装
 ```bash
-brew tap MakeHQ/makecli
+brew tap qfeius/makecli
 brew install makecli
 ```
 ## 强制升级到最新版本
@@ -12,7 +12,7 @@ makecli update
 ```
 或者使用下面命令
 ```
-git -C $(brew --repo makehq/makecli) pull && brew upgrade makecli
+git -C $(brew --repo qfeius/makecli) pull && brew upgrade makecli
 ```
 ## 功能
 
@@ -28,7 +28,7 @@ makecli configure --profile todo
 交互示例：
 ```
 Configuring profile [default]
-MakeHQ Access Token [****YDUW]:
+MakeCLI Access Token [****YDUW]:
 Credentials saved to ~/.make/credentials
 ```
 

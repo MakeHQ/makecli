@@ -50,7 +50,7 @@ var apiBaseURL = "https://api.github.com"
 
 // CheckLatest 查询 GitHub 最新 release，返回 release 信息和是否有更新
 func CheckLatest(currentVersion string) (*Release, bool, error) {
-	url := apiBaseURL + "/repos/MakeHQ/makecli/releases/latest"
+	url := apiBaseURL + "/repos/qfeius/makecli/releases/latest"
 
 	resp, err := http.Get(url)
 	if err != nil {

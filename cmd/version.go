@@ -41,7 +41,7 @@ func formatVersion(version, buildDate string) string {
 func changelogURL(version string) string {
 	semver := regexp.MustCompile(`^\d+\.\d+\.\d+(-[\w.]+)?$`)
 	if semver.MatchString(version) {
-		return fmt.Sprintf("https://github.com/MakeHQ/makecli/releases/tag/v%s", version)
+		return fmt.Sprintf("https://github.com/qfeius/makecli/releases/tag/v%s", version)
 	}
-	return "https://github.com/MakeHQ/makecli/releases/latest"
+	return "https://github.com/qfeius/makecli/releases/latest"
 }

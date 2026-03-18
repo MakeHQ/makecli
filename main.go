@@ -10,8 +10,8 @@ package main
 import (
 	"os"
 
-	"github.com/MakeHQ/makecli/cmd"
-	"github.com/MakeHQ/makecli/internal/build"
+	"github.com/qfeius/makecli/cmd"
+	"github.com/qfeius/makecli/internal/build"
 )
 
 func main() {

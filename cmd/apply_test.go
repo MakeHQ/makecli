@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/MakeHQ/makecli/internal/config"
+	"github.com/qfeius/makecli/internal/config"
 )
 
 // ---------------------------------- apply 测试 ----------------------------------

@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/MakeHQ/makecli/internal/api"
-	"github.com/MakeHQ/makecli/internal/config"
+	"github.com/qfeius/makecli/internal/api"
+	"github.com/qfeius/makecli/internal/config"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )

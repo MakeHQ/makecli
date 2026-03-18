@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/MakeHQ/makecli/internal/build"
-	"github.com/MakeHQ/makecli/internal/update"
+	"github.com/qfeius/makecli/internal/build"
+	"github.com/qfeius/makecli/internal/update"
 	"github.com/spf13/cobra"
 )
 

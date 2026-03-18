@@ -1,4 +1,4 @@
-module github.com/MakeHQ/makecli
+module github.com/qfeius/makecli
 
 go 1.22.2
 
