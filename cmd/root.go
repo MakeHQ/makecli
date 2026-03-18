@@ -14,6 +14,11 @@ import (
 // DebugMode 全局调试模式标志，从命令行读取
 var DebugMode bool
 
+// ServerURL Meta Server 基础 URL，从命令行读取
+var ServerURL string
+
+const defaultMetaServer = "https://dev-make.qtech.cn/api/make"
+
 var rootCmd = &cobra.Command{
 	Use:   "makecli",
 	Short: "makecli — agentic development platform cli",
@@ -46,6 +51,7 @@ func Execute(version, buildDate string) error {
 	rootCmd.SetErrPrefix("error:")
 	rootCmd.PersistentFlags().BoolVar(&DebugMode, "debug", false, "enable debug mode to show curl output")
 	_ = rootCmd.PersistentFlags().MarkHidden("debug")
+	rootCmd.PersistentFlags().StringVar(&ServerURL, "server", defaultMetaServer, "Meta Server base URL")
 	rootCmd.AddCommand(newVersionCmd(version, buildDate))
 	rootCmd.AddCommand(newConfigureCmd())
 	rootCmd.AddCommand(newApplyCmd())

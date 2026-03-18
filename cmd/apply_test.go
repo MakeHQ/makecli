@@ -26,6 +26,7 @@ func TestRunAppApply(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultTokenForApply(t)
+		ServerURL = srv.URL
 		testDir := t.TempDir()
 
 		yamlFile := writeYAMLFileForApply(t, testDir, "app.yaml", `name: myapp
@@ -36,7 +37,7 @@ properties:
   code: custom_code
 `)
 
-		if err := runAppApply(yamlFile, "default", srv.URL); err != nil {
+		if err := runAppApply(yamlFile, "default"); err != nil {
 			t.Fatalf("runAppApply: %v", err)
 		}
 	})
@@ -52,6 +53,7 @@ properties:
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultTokenForApply(t)
+		ServerURL = srv.URL
 		testDir := t.TempDir()
 
 		yamlFile := writeYAMLFileForApply(t, testDir, "multi.yaml", `name: app1
@@ -69,7 +71,7 @@ properties:
   code: app2
 `)
 
-		if err := runAppApply(yamlFile, "default", srv.URL); err != nil {
+		if err := runAppApply(yamlFile, "default"); err != nil {
 			t.Fatalf("runAppApply multi-doc: %v", err)
 		}
 		// 每个 App: 1x GetApp + 1x CreateApp = 2 calls，2 个 App = 4 calls
@@ -89,6 +91,7 @@ properties:
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultTokenForApply(t)
+		ServerURL = srv.URL
 		testDir := t.TempDir()
 
 		writeYAMLFileForApply(t, testDir, "app.yaml", `name: myapp
@@ -112,7 +115,7 @@ properties:
       properties: {}
 `)
 
-		if err := runAppApply(testDir, "default", srv.URL); err != nil {
+		if err := runAppApply(testDir, "default"); err != nil {
 			t.Fatalf("runAppApply dir: %v", err)
 		}
 		// 1x GetApp + 1x CreateApp + 1x GetEntity + 1x CreateEntity = 4 calls
@@ -123,6 +126,7 @@ properties:
 
 	t.Run("fails with missing credentials", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
+		ServerURL = "http://unused"
 		testDir := t.TempDir()
 		// 不写入凭证，测试缺失凭证的情况
 
@@ -134,7 +138,7 @@ properties:
   code: test
 `)
 
-		if err := runAppApply(yamlFile, "default", "http://localhost"); err == nil {
+		if err := runAppApply(yamlFile, "default"); err == nil {
 			t.Fatal("expected error for missing credentials")
 		}
 	})
@@ -143,6 +147,7 @@ properties:
 		t.Setenv("HOME", t.TempDir())
 		testDir := t.TempDir()
 		saveDefaultTokenForApply(t)
+		ServerURL = "http://unused"
 		yamlFile := writeYAMLFileForApply(t, testDir, "app.yaml", `name: test
 type: Make.App
 meta:
@@ -151,7 +156,7 @@ properties:
   code: test
 `)
 
-		if err := runAppApply(yamlFile, "unknown", "http://localhost"); err == nil {
+		if err := runAppApply(yamlFile, "unknown"); err == nil {
 			t.Fatal("expected error for unknown profile")
 		}
 	})
@@ -161,6 +166,7 @@ properties:
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultTokenForApply(t)
+		ServerURL = srv.URL
 		testDir := t.TempDir()
 
 		yamlFile := writeYAMLFileForApply(t, testDir, "app.yaml", `name: test
@@ -171,7 +177,7 @@ properties:
   code: test
 `)
 
-		if err := runAppApply(yamlFile, "default", srv.URL); err == nil {
+		if err := runAppApply(yamlFile, "default"); err == nil {
 			t.Fatal("expected error on API failure")
 		}
 	})
@@ -181,6 +187,7 @@ properties:
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultTokenForApply(t)
+		ServerURL = srv.URL
 		testDir := t.TempDir()
 
 		yamlFile := writeYAMLFileForApply(t, testDir, "entity.yaml", `name: Task
@@ -191,7 +198,7 @@ properties:
   fields: []
 `)
 
-		if err := runAppApply(yamlFile, "default", srv.URL); err == nil {
+		if err := runAppApply(yamlFile, "default"); err == nil {
 			t.Fatal("expected error for missing app field")
 		}
 	})
@@ -201,11 +208,12 @@ properties:
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultTokenForApply(t)
+		ServerURL = srv.URL
 		testDir := t.TempDir()
 
 		yamlFile := writeYAMLFileForApply(t, testDir, "empty.yaml", "")
 
-		err := runAppApply(yamlFile, "default", srv.URL)
+		err := runAppApply(yamlFile, "default")
 		if err == nil {
 			t.Fatal("expected error for empty YAML file")
 		}
@@ -218,11 +226,12 @@ properties:
 	t.Run("fails on invalid YAML", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultTokenForApply(t)
+		ServerURL = "http://unused"
 		testDir := t.TempDir()
 		bad := filepath.Join(testDir, "bad.yaml")
 		_ = os.WriteFile(bad, []byte("invalid: yaml: ["), 0644)
 
-		if err := runAppApply(bad, "default", "http://localhost"); err == nil {
+		if err := runAppApply(bad, "default"); err == nil {
 			t.Fatal("expected error for invalid YAML")
 		}
 	})
@@ -231,10 +240,11 @@ properties:
 func TestRunAppApplyFailsWithoutRecognizedYAMLFiles(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	saveDefaultTokenForApply(t)
+	ServerURL = "http://unused"
 	testDir := t.TempDir()
 	writeYAMLFileForApply(t, testDir, "app.json", `{"name":"app1"}`)
 
-	err := runAppApply(testDir, "default", "http://localhost")
+	err := runAppApply(testDir, "default")
 	if err == nil {
 		t.Fatal("expected error for directory without yaml files")
 	}

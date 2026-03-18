@@ -22,7 +22,6 @@ import (
 
 func newApplyCmd() *cobra.Command {
 	var profile string
-	var server string
 	var path string
 
 	cmd := &cobra.Command{
@@ -36,12 +35,11 @@ Supports creating App and Entity resources.`,
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runAppApply(path, profile, server)
+			return runAppApply(path, profile)
 		},
 	}
 
 	cmd.Flags().StringVar(&profile, "profile", "default", "credentials profile to use")
-	cmd.Flags().StringVar(&server, "server", defaultMetaServer, "Meta Server base URL")
 	cmd.Flags().StringVarP(&path, "file", "f", "", "path to YAML file or directory (required)")
 	_ = cmd.MarkFlagRequired("file")
 	return cmd
@@ -49,8 +47,8 @@ Supports creating App and Entity resources.`,
 
 // ---------------------------------- 执行函数 ----------------------------------
 
-func runAppApply(path, profile, server string) error {
-	client, err := newClientFromProfile(profile, server)
+func runAppApply(path, profile string) error {
+	client, err := newClientFromProfile(profile)
 	if err != nil {
 		return err
 	}

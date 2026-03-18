@@ -19,7 +19,6 @@ import (
 
 func newEntityCreateCmd() *cobra.Command {
 	var profile string
-	var server string
 	var fieldsFile string
 
 	cmd := &cobra.Command{
@@ -29,18 +28,17 @@ func newEntityCreateCmd() *cobra.Command {
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			app, _ := cmd.Parent().Flags().GetString("app")
-			return runEntityCreate(args[0], app, fieldsFile, profile, server)
+			return runEntityCreate(args[0], app, fieldsFile, profile)
 		},
 	}
 
 	cmd.Flags().StringVar(&fieldsFile, "fields", "", "path to JSON file containing fields array")
 	cmd.Flags().StringVar(&profile, "profile", "default", "credentials profile to use")
-	cmd.Flags().StringVar(&server, "server", defaultMetaServer, "Meta Server base URL")
 	return cmd
 }
 
-func runEntityCreate(name, app, fieldsFile, profile, server string) error {
-	client, err := newClientFromProfile(profile, server)
+func runEntityCreate(name, app, fieldsFile, profile string) error {
+	client, err := newClientFromProfile(profile)
 	if err != nil {
 		return err
 	}

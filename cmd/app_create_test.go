@@ -22,8 +22,9 @@ func TestRunAppCreate(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppCreate("myapp", "", "default", srv.URL); err != nil {
+		if err := runAppCreate("myapp", "", "default"); err != nil {
 			t.Fatalf("runAppCreate: %v", err)
 		}
 	})
@@ -33,8 +34,9 @@ func TestRunAppCreate(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppCreate("myapp", "custom_code", "default", srv.URL); err != nil {
+		if err := runAppCreate("myapp", "custom_code", "default"); err != nil {
 			t.Fatalf("runAppCreate with code: %v", err)
 		}
 	})
@@ -44,16 +46,18 @@ func TestRunAppCreate(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppCreate("myapp", "", "default", srv.URL); err != nil {
+		if err := runAppCreate("myapp", "", "default"); err != nil {
 			t.Fatalf("runAppCreate without code: %v", err)
 		}
 	})
 
 	t.Run("fails without credentials", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
+		ServerURL = "http://unused"
 		// 未写入任何凭证，预期报错
-		if err := runAppCreate("myapp", "", "default", "http://localhost"); err == nil {
+		if err := runAppCreate("myapp", "", "default"); err == nil {
 			t.Fatal("expected error for missing credentials")
 		}
 	})
@@ -63,8 +67,9 @@ func TestRunAppCreate(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppCreate("myapp", "", "default", srv.URL); err == nil {
+		if err := runAppCreate("myapp", "", "default"); err == nil {
 			t.Fatal("expected error on API failure")
 		}
 	})
@@ -72,8 +77,9 @@ func TestRunAppCreate(t *testing.T) {
 	t.Run("fails with unknown profile", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = "http://unused"
 
-		if err := runAppCreate("myapp", "", "nonexistent", "http://localhost"); err == nil {
+		if err := runAppCreate("myapp", "", "nonexistent"); err == nil {
 			t.Fatal("expected error for unknown profile")
 		}
 	})

@@ -49,8 +49,9 @@ func TestRunAppList(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppList("default", srv.URL, 1, 20, outputTable); err != nil {
+		if err := runAppList("default", 1, 20, outputTable); err != nil {
 			t.Fatalf("runAppList: %v", err)
 		}
 	})
@@ -66,8 +67,9 @@ func TestRunAppList(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppList("default", srv.URL, 1, 20, outputTable); err != nil {
+		if err := runAppList("default", 1, 20, outputTable); err != nil {
 			t.Fatalf("runAppList: %v", err)
 		}
 	})
@@ -87,9 +89,10 @@ func TestRunAppList(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
 		output := captureStdout(t, func() {
-			if err := runAppList("default", srv.URL, 2, 20, outputJSON); err != nil {
+			if err := runAppList("default", 2, 20, outputJSON); err != nil {
 				t.Fatalf("runAppList json: %v", err)
 			}
 		})
@@ -110,7 +113,8 @@ func TestRunAppList(t *testing.T) {
 
 	t.Run("fails without credentials", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
-		if err := runAppList("default", "http://localhost", 1, 20, outputTable); err == nil {
+		ServerURL = "http://unused"
+		if err := runAppList("default", 1, 20, outputTable); err == nil {
 			t.Fatal("expected error for missing credentials")
 		}
 	})
@@ -122,26 +126,27 @@ func TestRunAppList(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppList("default", srv.URL, 1, 20, outputTable); err == nil {
+		if err := runAppList("default", 1, 20, outputTable); err == nil {
 			t.Fatal("expected error on API failure")
 		}
 	})
 
 	t.Run("fails when page is less than 1", func(t *testing.T) {
-		if err := runAppList("default", "http://localhost", 0, 20, outputTable); err == nil {
+		if err := runAppList("default", 0, 20, outputTable); err == nil {
 			t.Fatal("expected error for invalid page")
 		}
 	})
 
 	t.Run("fails when size is less than 1", func(t *testing.T) {
-		if err := runAppList("default", "http://localhost", 1, 0, outputTable); err == nil {
+		if err := runAppList("default", 1, 0, outputTable); err == nil {
 			t.Fatal("expected error for invalid size")
 		}
 	})
 
 	t.Run("fails on unsupported output format", func(t *testing.T) {
-		if err := runAppList("default", "http://localhost", 1, 20, "xml"); err == nil {
+		if err := runAppList("default", 1, 20, "xml"); err == nil {
 			t.Fatal("expected error for unsupported output format")
 		}
 	})

@@ -17,15 +17,17 @@ func TestRunAppDelete(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppDelete("myapp", "default", srv.URL); err != nil {
+		if err := runAppDelete("myapp", "default"); err != nil {
 			t.Fatalf("runAppDelete: %v", err)
 		}
 	})
 
 	t.Run("fails without credentials", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
-		if err := runAppDelete("myapp", "default", "http://localhost"); err == nil {
+		ServerURL = "http://unused"
+		if err := runAppDelete("myapp", "default"); err == nil {
 			t.Fatal("expected error for missing credentials")
 		}
 	})
@@ -35,8 +37,9 @@ func TestRunAppDelete(t *testing.T) {
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = srv.URL
 
-		if err := runAppDelete("myapp", "default", srv.URL); err == nil {
+		if err := runAppDelete("myapp", "default"); err == nil {
 			t.Fatal("expected error on API failure")
 		}
 	})
@@ -44,8 +47,9 @@ func TestRunAppDelete(t *testing.T) {
 	t.Run("fails with unknown profile", func(t *testing.T) {
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
+		ServerURL = "http://unused"
 
-		if err := runAppDelete("myapp", "nonexistent", "http://localhost"); err == nil {
+		if err := runAppDelete("myapp", "nonexistent"); err == nil {
 			t.Fatal("expected error for unknown profile")
 		}
 	})

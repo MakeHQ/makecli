@@ -15,7 +15,6 @@ import (
 
 func newEntityDeleteCmd() *cobra.Command {
 	var profile string
-	var server string
 
 	cmd := &cobra.Command{
 		Use:          "delete <name>",
@@ -24,17 +23,16 @@ func newEntityDeleteCmd() *cobra.Command {
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			app, _ := cmd.Parent().Flags().GetString("app")
-			return runEntityDelete(args[0], app, profile, server)
+			return runEntityDelete(args[0], app, profile)
 		},
 	}
 
 	cmd.Flags().StringVar(&profile, "profile", "default", "credentials profile to use")
-	cmd.Flags().StringVar(&server, "server", defaultMetaServer, "Meta Server base URL")
 	return cmd
 }
 
-func runEntityDelete(name, app, profile, server string) error {
-	client, err := newClientFromProfile(profile, server)
+func runEntityDelete(name, app, profile string) error {
+	client, err := newClientFromProfile(profile)
 	if err != nil {
 		return err
 	}

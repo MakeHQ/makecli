@@ -15,7 +15,6 @@ import (
 
 func newAppDeleteCmd() *cobra.Command {
 	var profile string
-	var server string
 
 	cmd := &cobra.Command{
 		Use:          "delete <name>",
@@ -23,17 +22,16 @@ func newAppDeleteCmd() *cobra.Command {
 		Args:         cobra.ExactArgs(1),
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runAppDelete(args[0], profile, server)
+			return runAppDelete(args[0], profile)
 		},
 	}
 
 	cmd.Flags().StringVar(&profile, "profile", "default", "credentials profile to use")
-	cmd.Flags().StringVar(&server, "server", defaultMetaServer, "Meta Server base URL")
 	return cmd
 }
 
-func runAppDelete(name, profile, server string) error {
-	client, err := newClientFromProfile(profile, server)
+func runAppDelete(name, profile string) error {
+	client, err := newClientFromProfile(profile)
 	if err != nil {
 		return err
 	}

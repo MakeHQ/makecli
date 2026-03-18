@@ -13,11 +13,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const defaultMetaServer = "https://dev-make.qtech.cn/api/make"
-
 func newAppCreateCmd() *cobra.Command {
 	var profile string
-	var server string
 	var code string
 
 	cmd := &cobra.Command{
@@ -26,18 +23,17 @@ func newAppCreateCmd() *cobra.Command {
 		Args:         cobra.ExactArgs(1),
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runAppCreate(args[0], code, profile, server)
+			return runAppCreate(args[0], code, profile)
 		},
 	}
 
 	cmd.Flags().StringVar(&profile, "profile", "default", "credentials profile to use")
-	cmd.Flags().StringVar(&server, "server", defaultMetaServer, "Meta Server base URL")
 	cmd.Flags().StringVar(&code, "code", "", "app code (defaults to name)")
 	return cmd
 }
 
-func runAppCreate(name, code, profile, server string) error {
-	client, err := newClientFromProfile(profile, server)
+func runAppCreate(name, code, profile string) error {
+	client, err := newClientFromProfile(profile)
 	if err != nil {
 		return err
 	}

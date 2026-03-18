@@ -15,7 +15,7 @@ import (
 )
 
 // newClientFromProfile 从 profile 加载凭证和配置，构建 API 客户端
-func newClientFromProfile(profile, server string) (*api.Client, error) {
+func newClientFromProfile(profile string) (*api.Client, error) {
 	creds, err := config.Load()
 	if err != nil {
 		return nil, fmt.Errorf("加载凭证失败: %w", err)
@@ -41,5 +41,5 @@ func newClientFromProfile(profile, server string) (*api.Client, error) {
 		}
 	}
 
-	return api.New(server, p.AccessToken, api.WithDebug(DebugMode), api.WithHeaders(headers)), nil
+	return api.New(ServerURL, p.AccessToken, api.WithDebug(DebugMode), api.WithHeaders(headers)), nil
 }
