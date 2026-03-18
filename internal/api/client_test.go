@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 internal/api 包内的 Client（包内白盒），encoding/json、net/http、net/http/httptest
- * [OUTPUT]: 覆盖 Client.CreateApp / ListApps / DeleteApp 的单元测试
+ * [OUTPUT]: 覆盖 Client.CreateApp / ListApps / DeleteApp / WithHeaders / WithDebug 的单元测试
  * [POS]: internal/api client.go 的配套测试，用 httptest 隔离网络
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -149,4 +149,38 @@ func TestListApps(t *testing.T) {
 			t.Errorf("expected empty result, got apps=%d total=%d", len(apps), total)
 		}
 	})
+}
+
+func TestWithHeaders(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got := r.Header.Get("x-tenant-id"); got != "tenant-abc" {
+			t.Errorf("x-tenant-id = %q, want %q", got, "tenant-abc")
+		}
+		if got := r.Header.Get("operator-id"); got != "op-123" {
+			t.Errorf("operator-id = %q, want %q", got, "op-123")
+		}
+		_ = json.NewEncoder(w).Encode(map[string]any{"code": 200, "msg": "ok"})
+	}))
+	defer srv.Close()
+
+	headers := map[string]string{
+		"x-tenant-id": "tenant-abc",
+		"operator-id": "op-123",
+	}
+	client := New(srv.URL, "test-token", WithHeaders(headers))
+	if err := client.CreateApp("test"); err != nil {
+		t.Fatalf("CreateApp with headers: %v", err)
+	}
+}
+
+func TestWithDebugOption(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{"code": 200, "msg": "ok"})
+	}))
+	defer srv.Close()
+
+	client := New(srv.URL, "test-token", WithDebug(true))
+	if err := client.CreateApp("test"); err != nil {
+		t.Fatalf("CreateApp with debug: %v", err)
+	}
 }

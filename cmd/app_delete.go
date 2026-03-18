@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 internal/config（Load/Credentials）、internal/api（Client/DeleteApp）、fmt、github.com/spf13/cobra
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、fmt、github.com/spf13/cobra
  * [OUTPUT]: 对外提供 newAppDeleteCmd 函数
  * [POS]: cmd/app 的 delete 子命令，调用 Meta Server API 删除指定 App
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -10,8 +10,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/qfeius/makecli/internal/api"
-	"github.com/qfeius/makecli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -35,17 +33,12 @@ func newAppDeleteCmd() *cobra.Command {
 }
 
 func runAppDelete(name, profile, server string) error {
-	creds, err := config.Load()
+	client, err := newClientFromProfile(profile, server)
 	if err != nil {
-		return fmt.Errorf("加载凭证失败: %w", err)
+		return err
 	}
 
-	p, ok := creds[profile]
-	if !ok || p.AccessToken == "" {
-		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
-	}
-
-	if err := api.New(server, p.AccessToken, DebugMode).DeleteApp(name); err != nil {
+	if err := client.DeleteApp(name); err != nil {
 		return err
 	}
 

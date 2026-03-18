@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/CreateAppWithCode/CreateEntity/GetApp/GetEntity/UpdateEntity）、fmt、os、path/filepath、strings、gopkg.in/yaml.v3、github.com/spf13/cobra
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、internal/api（Client/CreateAppWithCode/CreateEntity/GetApp/GetEntity/UpdateEntity/Field）、fmt、os、path/filepath、strings、gopkg.in/yaml.v3、github.com/spf13/cobra
  * [OUTPUT]: 对外提供 newApplyCmd 函数
  * [POS]: cmd 模块的顶层 apply 命令，从 YAML 文件/目录批量应用资源（create-or-update 语义）
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/qfeius/makecli/internal/api"
-	"github.com/qfeius/makecli/internal/config"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -51,14 +50,9 @@ Supports creating App and Entity resources.`,
 // ---------------------------------- 执行函数 ----------------------------------
 
 func runAppApply(path, profile, server string) error {
-	creds, err := config.Load()
+	client, err := newClientFromProfile(profile, server)
 	if err != nil {
-		return fmt.Errorf("加载凭证失败: %w", err)
-	}
-
-	p, ok := creds[profile]
-	if !ok || p.AccessToken == "" {
-		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
+		return err
 	}
 
 	info, err := os.Stat(path)
@@ -80,7 +74,7 @@ func runAppApply(path, profile, server string) error {
 		return fmt.Errorf("no objects passed to apply")
 	}
 
-	if err := applyResources(resources, server, p.AccessToken); err != nil {
+	if err := applyResources(resources, client); err != nil {
 		return err
 	}
 
@@ -178,7 +172,7 @@ func isRecognizedManifestExtension(ext string) bool {
 // ---------------------------------- 资源应用 ----------------------------------
 
 // applyResources 按依赖顺序应用资源：Make.App 先于 Make.Entity
-func applyResources(resources []ResourceManifest, server, token string) error {
+func applyResources(resources []ResourceManifest, client *api.Client) error {
 	// 按类型分组
 	apps := []ResourceManifest{}
 	entities := []ResourceManifest{}
@@ -190,8 +184,6 @@ func applyResources(resources []ResourceManifest, server, token string) error {
 			entities = append(entities, r)
 		}
 	}
-
-	client := api.New(server, token, DebugMode)
 
 	// 先应用 App
 	for _, app := range apps {

@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/ListEntities/GetEntity）、fmt、os、github.com/olekukonko/tablewriter、github.com/spf13/cobra、cmd/output 辅助
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、internal/api（Client）、fmt、os、github.com/olekukonko/tablewriter、github.com/spf13/cobra、cmd/output 辅助
  * [OUTPUT]: 对外提供 newEntityListCmd 函数
  * [POS]: cmd/entity 的 list 子命令，无 arg 时分页列出 app 下全部 entity，有 arg 时显示指定 entity 详情，支持 table/json 输出
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -12,7 +12,6 @@ import (
 	"os"
 
 	"github.com/qfeius/makecli/internal/api"
-	"github.com/qfeius/makecli/internal/config"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -58,17 +57,11 @@ func runEntityList(app, entityName, profile, server string, page, size int, outp
 		return fmt.Errorf("size must be greater than or equal to 1")
 	}
 
-	creds, err := config.Load()
+	client, err := newClientFromProfile(profile, server)
 	if err != nil {
-		return fmt.Errorf("加载凭证失败: %w", err)
+		return err
 	}
 
-	p, ok := creds[profile]
-	if !ok || p.AccessToken == "" {
-		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
-	}
-
-	client := api.New(server, p.AccessToken, DebugMode)
 	if entityName != "" {
 		return showEntity(client, app, entityName, output)
 	}

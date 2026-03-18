@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/ListApps）、fmt、os、github.com/olekukonko/tablewriter、github.com/spf13/cobra、cmd/output 辅助
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、fmt、os、github.com/olekukonko/tablewriter、github.com/spf13/cobra、cmd/output 辅助
  * [OUTPUT]: 对外提供 newAppListCmd 函数
  * [POS]: cmd/app 的 list 子命令，分页列出 org 下全部 App，支持 table/json 输出
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -11,8 +11,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/qfeius/makecli/internal/api"
-	"github.com/qfeius/makecli/internal/config"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -52,17 +50,12 @@ func runAppList(profile, server string, page, size int, output string) error {
 		return fmt.Errorf("size must be greater than or equal to 1")
 	}
 
-	creds, err := config.Load()
+	client, err := newClientFromProfile(profile, server)
 	if err != nil {
-		return fmt.Errorf("加载凭证失败: %w", err)
+		return err
 	}
 
-	p, ok := creds[profile]
-	if !ok || p.AccessToken == "" {
-		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
-	}
-
-	apps, total, err := api.New(server, p.AccessToken, DebugMode).ListApps(page, size)
+	apps, total, err := client.ListApps(page, size)
 	if err != nil {
 		return err
 	}

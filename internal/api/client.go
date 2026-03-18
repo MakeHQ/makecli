@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 bytes、encoding/json、fmt、net/http、time
- * [OUTPUT]: 对外提供 Client 类型、New 构造函数、App / Field / Entity / EntityProperties 类型、CreateApp / CreateAppWithCode / ListApps / DeleteApp / GetApp / CreateEntity / ListEntities / GetEntity / UpdateEntity / DeleteEntity 方法
+ * [OUTPUT]: 对外提供 Client 类型、Option / WithDebug / WithHeaders 功能选项、New 构造函数、App / Field / Entity / EntityProperties 类型、CreateApp / CreateAppWithCode / ListApps / DeleteApp / GetApp / CreateEntity / ListEntities / GetEntity / UpdateEntity / DeleteEntity 方法
  * [POS]: internal/api 的核心，封装 Make Meta Service 的 HTTP 调用
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -24,23 +24,35 @@ type Client struct {
 	token      string
 	httpClient *http.Client
 	debug      bool
+	headers    map[string]string
+}
+
+// Option 是 Client 的功能选项
+type Option func(*Client)
+
+// WithDebug 启用 debug 模式，输出 curl 命令到 stderr
+func WithDebug(on bool) Option {
+	return func(c *Client) { c.debug = on }
+}
+
+// WithHeaders 设置额外请求头（如 x-tenant-id、operator-id）
+func WithHeaders(h map[string]string) Option {
+	return func(c *Client) { c.headers = h }
 }
 
 // New 创建新的 API 客户端，30s 超时
-// 可选第三个参数启用 debug 模式
-func New(baseURL, token string, debug ...bool) *Client {
-	debugMode := false
-	if len(debug) > 0 {
-		debugMode = debug[0]
-	}
-	return &Client{
+func New(baseURL, token string, opts ...Option) *Client {
+	c := &Client{
 		baseURL: baseURL,
 		token:   token,
-		debug:   debugMode,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
 	}
+	for _, opt := range opts {
+		opt(c)
+	}
+	return c
 }
 
 // ---------------------------------- 数据类型 ----------------------------------
@@ -245,6 +257,9 @@ func (c *Client) do(target, path string, body, result any) error {
 		fmt.Fprintf(os.Stderr, "  -H 'Content-Type: application/json' \\\n")
 		fmt.Fprintf(os.Stderr, "  -H 'Authorization: Bearer %s' \\\n", c.token)
 		fmt.Fprintf(os.Stderr, "  -H 'X-Make-Target: %s' \\\n", target)
+		for k, v := range c.headers {
+			fmt.Fprintf(os.Stderr, "  -H '%s: %s' \\\n", k, v)
+		}
 		fmt.Fprintf(os.Stderr, "  -d '%s'\n", string(data))
 		fmt.Fprintf(os.Stderr, "==========================\n\n")
 	}
@@ -256,6 +271,9 @@ func (c *Client) do(target, path string, body, result any) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.token)
 	req.Header.Set("X-Make-Target", target)
+	for k, v := range c.headers {
+		req.Header.Set(k, v)
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

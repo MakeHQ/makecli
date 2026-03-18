@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 internal/config、internal/api（Field/CreateEntity）、encoding/json、fmt、os、strings、github.com/spf13/cobra
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、internal/api（Field）、encoding/json、fmt、os、strings、github.com/spf13/cobra
  * [OUTPUT]: 对外提供 newEntityCreateCmd 函数
  * [POS]: cmd/entity 的 create 子命令，校验 fields、调用 Meta Server API 创建 Entity
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/qfeius/makecli/internal/api"
-	"github.com/qfeius/makecli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -41,14 +40,9 @@ func newEntityCreateCmd() *cobra.Command {
 }
 
 func runEntityCreate(name, app, fieldsFile, profile, server string) error {
-	creds, err := config.Load()
+	client, err := newClientFromProfile(profile, server)
 	if err != nil {
-		return fmt.Errorf("加载凭证失败: %w", err)
-	}
-
-	p, ok := creds[profile]
-	if !ok || p.AccessToken == "" {
-		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
+		return err
 	}
 
 	fields, err := loadFields(fieldsFile)
@@ -62,7 +56,7 @@ func runEntityCreate(name, app, fieldsFile, profile, server string) error {
 		}
 	}
 
-	if err := api.New(server, p.AccessToken, DebugMode).CreateEntity(name, app, fields); err != nil {
+	if err := client.CreateEntity(name, app, fields); err != nil {
 		return err
 	}
 

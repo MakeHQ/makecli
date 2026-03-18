@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 internal/config（Load/Credentials）、internal/api（Client/New/CreateAppWithCode）、fmt、github.com/spf13/cobra
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、fmt、github.com/spf13/cobra
  * [OUTPUT]: 对外提供 newAppCreateCmd 函数
  * [POS]: cmd/app 的 create 子命令，调用 Meta Server API 创建 App，支持 --code 选项
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -10,8 +10,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/qfeius/makecli/internal/api"
-	"github.com/qfeius/makecli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -39,17 +37,11 @@ func newAppCreateCmd() *cobra.Command {
 }
 
 func runAppCreate(name, code, profile, server string) error {
-	creds, err := config.Load()
+	client, err := newClientFromProfile(profile, server)
 	if err != nil {
-		return fmt.Errorf("加载凭证失败: %w", err)
+		return err
 	}
 
-	p, ok := creds[profile]
-	if !ok || p.AccessToken == "" {
-		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
-	}
-
-	client := api.New(server, p.AccessToken, DebugMode)
 	var apiErr error
 	if code == "" {
 		apiErr = client.CreateApp(name) // code 默认为 name

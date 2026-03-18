@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 internal/config（Load/Credentials）、internal/api（Client/DeleteEntity）、fmt、github.com/spf13/cobra
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、fmt、github.com/spf13/cobra
  * [OUTPUT]: 对外提供 newEntityDeleteCmd 函数
  * [POS]: cmd/entity 的 delete 子命令，调用 Meta Server API 删除指定 Entity
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -10,8 +10,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/qfeius/makecli/internal/api"
-	"github.com/qfeius/makecli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -36,17 +34,12 @@ func newEntityDeleteCmd() *cobra.Command {
 }
 
 func runEntityDelete(name, app, profile, server string) error {
-	creds, err := config.Load()
+	client, err := newClientFromProfile(profile, server)
 	if err != nil {
-		return fmt.Errorf("加载凭证失败: %w", err)
+		return err
 	}
 
-	p, ok := creds[profile]
-	if !ok || p.AccessToken == "" {
-		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
-	}
-
-	if err := api.New(server, p.AccessToken, DebugMode).DeleteEntity(name, app); err != nil {
+	if err := client.DeleteEntity(name, app); err != nil {
 		return err
 	}
 

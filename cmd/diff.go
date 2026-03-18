@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 internal/config（Load）、internal/api（Client/GetApp/ListEntities）、cmd/apply（loadManifestsFromFile/Dir/ResourceManifest）、cmd/output（validateOutputFormat/writeJSON）、encoding/json、fmt、os、reflect、sort
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、internal/api（Client/GetApp/ListEntities）、cmd/apply（loadManifestsFromFile/Dir/ResourceManifest）、cmd/output（validateOutputFormat/writeJSON）、encoding/json、fmt、os、reflect、sort
  * [OUTPUT]: 对外提供 newDiffCmd 函数
  * [POS]: cmd 模块的顶层 diff 命令，对比远端 Meta Server 上的 App DSL 与本地 YAML 文件的差异
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -15,7 +15,6 @@ import (
 	"reflect"
 
 	"github.com/qfeius/makecli/internal/api"
-	"github.com/qfeius/makecli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -96,14 +95,10 @@ func runDiff(path, profile, server, output string) error {
 		return err
 	}
 
-	// 加载凭证
-	creds, err := config.Load()
+	// 构建客户端
+	client, err := newClientFromProfile(profile, server)
 	if err != nil {
-		return fmt.Errorf("加载凭证失败: %w", err)
-	}
-	p, ok := creds[profile]
-	if !ok || p.AccessToken == "" {
-		return fmt.Errorf("profile '%s' 未配置，请先运行: makecli configure --profile %s", profile, profile)
+		return err
 	}
 
 	// 加载本地资源
@@ -131,7 +126,6 @@ func runDiff(path, profile, server, output string) error {
 	localEntities := filterEntities(resources)
 
 	// 获取远端数据
-	client := api.New(server, p.AccessToken, DebugMode)
 	if _, err := client.GetApp(app); err != nil {
 		return fmt.Errorf("获取远端 App '%s' 失败: %w", app, err)
 	}
