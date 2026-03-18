@@ -18,11 +18,14 @@ git -C $(brew --repo qfeius/makecli) pull && brew upgrade makecli
 
 ### 配置凭证
 ```bash
-# 配置默认 profile
+# 配置默认 profile 的 access token
 makecli configure
 
+# 等同于
+makecli configure token
+
 # 配置指定 profile
-makecli configure --profile todo
+makecli configure token --profile todo
 ```
 
 交互示例：
@@ -40,6 +43,31 @@ access_token = AKIAUXFQEUPWGEXEYDUW
 [todo]
 access_token = AKIAUXFQEUPWGEXEYDUW
 ```
+
+### 配置请求参数
+```bash
+# 交互式配置 x-tenant-id 和 operator-id
+makecli configure config
+
+# 配置指定 profile
+makecli configure config --profile todo
+
+# 单条设置
+makecli configure set x-tenant-id tenant_abc
+makecli configure set operator-id op_123
+
+# 单条读取
+makecli configure get x-tenant-id
+```
+
+配置保存在 `~/.make/config`，格式：
+```ini
+[default]
+x-tenant-id = tenant_abc
+operator-id = op_123
+```
+
+配置的 `x-tenant-id` 和 `operator-id` 会自动作为 HTTP Header 附加到所有 API 请求中。
 
 ### 查看版本
 ```bash
