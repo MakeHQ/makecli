@@ -44,7 +44,7 @@ checksum:
 # -------------------------------------------------------------------------
 # Homebrew Tap：GoReleaser 自动向 homebrew-makecli 推送更新后的 formula
 # -------------------------------------------------------------------------
-homebrew:
+brews:
   - name: makecli
     repository:
       owner: qfeius
