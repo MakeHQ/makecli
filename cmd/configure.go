@@ -107,6 +107,14 @@ func runConfigureConfig(profile string) error {
 	current := cfg[profile]
 	fmt.Printf("Configuring config profile [%s]\n", profile)
 
+	serverURL, err := prompt("server-url", current.ServerURL)
+	if err != nil {
+		return err
+	}
+	if serverURL != "" {
+		current.ServerURL = serverURL
+	}
+
 	tenantID, err := prompt("x-tenant-id", current.XTenantID)
 	if err != nil {
 		return err
@@ -135,7 +143,7 @@ func runConfigureConfig(profile string) error {
 
 // ---------------------------------- set 子命令 ----------------------------------
 
-var validConfigKeys = []string{"x-tenant-id", "operator-id"}
+var validConfigKeys = []string{"server-url", "x-tenant-id", "operator-id"}
 
 func validateConfigKey(key string) error {
 	for _, k := range validConfigKeys {
@@ -168,6 +176,8 @@ func runConfigureSet(profile, key, value string) error {
 	}
 	p := cfg[profile]
 	switch key {
+	case "server-url":
+		p.ServerURL = value
 	case "x-tenant-id":
 		p.XTenantID = value
 	case "operator-id":
@@ -201,6 +211,8 @@ func runConfigureGet(profile, key string) error {
 	}
 	p := cfg[profile]
 	switch key {
+	case "server-url":
+		fmt.Println(p.ServerURL)
 	case "x-tenant-id":
 		fmt.Println(p.XTenantID)
 	case "operator-id":

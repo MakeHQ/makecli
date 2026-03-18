@@ -31,8 +31,13 @@ func newClientFromProfile(profile string) (*api.Client, error) {
 		return nil, fmt.Errorf("加载配置失败: %w", err)
 	}
 
+	// 解析 server URL: --server-url > config > default
+	server := defaultMetaServer
 	headers := map[string]string{}
 	if cp, ok := cfg[profile]; ok {
+		if cp.ServerURL != "" {
+			server = cp.ServerURL
+		}
 		if cp.XTenantID != "" {
 			headers["x-tenant-id"] = cp.XTenantID
 		}
@@ -40,6 +45,9 @@ func newClientFromProfile(profile string) (*api.Client, error) {
 			headers["operator-id"] = cp.OperatorID
 		}
 	}
+	if ServerURL != "" {
+		server = ServerURL
+	}
 
-	return api.New(ServerURL, p.AccessToken, api.WithDebug(DebugMode), api.WithHeaders(headers)), nil
+	return api.New(server, p.AccessToken, api.WithDebug(DebugMode), api.WithHeaders(headers)), nil
 }

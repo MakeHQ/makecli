@@ -19,6 +19,7 @@ import (
 
 // ConfigProfile 代表一个命名配置块，如 [default]，持有租户与操作者信息
 type ConfigProfile struct {
+	ServerURL  string
 	XTenantID  string
 	OperatorID string
 }
@@ -95,6 +96,8 @@ func parseConfigINI(f *os.File) (Config, error) {
 
 		p := cfg[current]
 		switch key {
+		case "server-url":
+			p.ServerURL = val
 		case "x-tenant-id":
 			p.XTenantID = val
 		case "operator-id":
@@ -144,6 +147,9 @@ func SaveConfig(cfg Config) error {
 		}
 		_, _ = fmt.Fprintf(w, "[%s]\n", name)
 		p := cfg[name]
+		if p.ServerURL != "" {
+			_, _ = fmt.Fprintf(w, "server-url = %s\n", p.ServerURL)
+		}
 		if p.XTenantID != "" {
 			_, _ = fmt.Fprintf(w, "x-tenant-id = %s\n", p.XTenantID)
 		}
