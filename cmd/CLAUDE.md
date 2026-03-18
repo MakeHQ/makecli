@@ -5,10 +5,11 @@
 root.go:             根命令入口，挂载所有子命令，对外暴露 Execute(version, date)；定义全局 --debug 标志（隐藏，用于调试，输出 curl 命令）
 version.go:          version 子命令，格式化版本输出（参考 GitHub CLI 模式）
 version_test.go:     覆盖 formatVersion / changelogURL 的纯函数测试
-configure.go:        configure 子命令，交互式写入 ~/.make/credentials，支持 --profile
-configure_test.go:   覆盖 mask / validateJWT 的纯函数测试
+configure.go:        configure 命令组（PersistentFlag: --profile），默认行为等同 token 子命令；子命令: token（交互写 ~/.make/credentials）/ config（交互写 ~/.make/config）/ set（直接写单个 key）/ get（读取单个 key）；validateConfigKey 校验合法 key 集合
+configure_test.go:   覆盖 mask / validateJWT / validateConfigKey 的纯函数测试
+client.go:           公共 helper，newClientFromProfile 统一「凭证 + 配置 → API 客户端」构建逻辑，注入 debug/headers 选项
 app.go:              app 命令组，挂载 app 相关子命令
-app_create.go:       app create 子命令，调用 Meta Server API（MakeService.CreateResource）创建 App；支持 --profile 和 --server flags
+app_create.go:       app create 子命令，通过 newClientFromProfile 构建客户端，调用 CreateApp/CreateAppWithCode 创建 App；支持 --profile / --server / --code flags
 app_create_test.go:  覆盖 runAppCreate 的单元测试（成功/无凭证/API错误/未知profile），用 httptest 隔离网络
 app_list.go:         app list 子命令，调用 MakeService.ListResources 分页列出 org 下全部 App，tabwriter 对齐输出；支持 --profile / --server / --page / --size flags
 app_list_test.go:    覆盖 runAppList 的单元测试（成功/空列表/分页JSON/无凭证/API错误/非法页码），用 httptest 隔离网络

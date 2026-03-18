@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 依赖 cmd 包内的 mask、validateJWT（包内白盒）
- * [OUTPUT]: 覆盖凭证遮掩与 JWT 校验的单元测试
+ * [INPUT]: 依赖 cmd 包内的 mask、validateJWT、validateConfigKey（包内白盒）
+ * [OUTPUT]: 覆盖凭证遮掩、JWT 校验、config key 校验的单元测试
  * [POS]: cmd 模块 configure.go 的配套测试
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -55,5 +55,17 @@ func TestValidateJWT(t *testing.T) {
 		if err := validateJWT(tt.token); err == nil {
 			t.Errorf("validateJWT(%q) [%s]: expected error, got nil", tt.token, tt.name)
 		}
+	}
+}
+
+func TestValidConfigKeys(t *testing.T) {
+	if err := validateConfigKey("x-tenant-id"); err != nil {
+		t.Errorf("x-tenant-id should be valid: %v", err)
+	}
+	if err := validateConfigKey("operator-id"); err != nil {
+		t.Errorf("operator-id should be valid: %v", err)
+	}
+	if err := validateConfigKey("bad-key"); err == nil {
+		t.Error("bad-key should be invalid")
 	}
 }
