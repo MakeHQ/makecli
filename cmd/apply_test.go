@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/qfeius/makecli/internal/config"
@@ -200,6 +201,31 @@ properties:
 
 		if err := runAppApply(yamlFile, "default"); err == nil {
 			t.Fatal("expected error for missing app field")
+		}
+	})
+
+	t.Run("fails on unknown resource type", func(t *testing.T) {
+		srv := newMockMetaForApply(t, 200, "success")
+		defer srv.Close()
+		t.Setenv("HOME", t.TempDir())
+		saveDefaultTokenForApply(t)
+		ServerURL = srv.URL
+		testDir := t.TempDir()
+
+		yamlFile := writeYAMLFileForApply(t, testDir, "app.yaml", `name: todo
+type: aaa.App
+meta:
+  version: 1.0.0
+properties:
+  code: todo
+`)
+
+		err := runAppApply(yamlFile, "default")
+		if err == nil {
+			t.Fatal("expected error for unknown resource type")
+		}
+		if !strings.Contains(err.Error(), "未知资源类型") {
+			t.Fatalf("expected unknown type error, got %q", err.Error())
 		}
 	})
 

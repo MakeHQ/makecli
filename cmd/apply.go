@@ -180,6 +180,8 @@ func applyResources(resources []ResourceManifest, client *api.Client) error {
 			apps = append(apps, r)
 		case "Make.Entity":
 			entities = append(entities, r)
+		default:
+			return fmt.Errorf("未知资源类型 '%s'（资源 '%s'），支持的类型: Make.App, Make.Entity", r.Type, r.Name)
 		}
 	}
 
