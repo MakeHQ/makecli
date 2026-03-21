@@ -9,6 +9,10 @@ internal/config/ - 凭证与配置管理（读写 ~/.make/credentials 和 ~/.mak
 internal/update/ - 自更新引擎（GitHub Releases 查询、下载、原子替换二进制）
 </directory>
 
+<root>
+main.go                        - 程序入口，初始化并调用 cmd.Execute()
+</root>
+
 <config>
 go.mod                         - 模块声明，module github.com/qfeius/makecli
 Makefile                       - 本地构建脚本（build/test/vet/clean），通过 ldflags 注入版本和日期
