@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 bytes、encoding/json、fmt、net/http、time
- * [OUTPUT]: 对外提供 Client 类型、Option / WithDebug / WithHeaders 功能选项、New 构造函数、App / Field / Entity / EntityProperties 类型、CreateApp / CreateAppWithCode / ListApps / DeleteApp / GetApp / CreateEntity / ListEntities / GetEntity / UpdateEntity / DeleteEntity 方法
+ * [OUTPUT]: 对外提供 Client 类型、Option / WithDebug / WithHeaders 功能选项、New 构造函数、App / Field / Entity / EntityProperties / RelationEnd / RelationProperties / Relation 类型、CreateApp / CreateAppWithCode / ListApps / DeleteApp / GetApp / CreateEntity / ListEntities / GetEntity / UpdateEntity / DeleteEntity / CreateRelation / UpdateRelation / ListRelations / GetRelation / DeleteRelation 方法
  * [POS]: internal/api 的核心，封装 Make Meta Service 的 HTTP 调用
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -144,6 +144,29 @@ type EntityProperties struct {
 	Fields []Field `json:"fields"`
 }
 
+// ---------------------------------- Relation 操作 ----------------------------------
+
+// RelationEnd 描述关系的一端（实体 + 基数）
+type RelationEnd struct {
+	Entity      string `json:"entity"`
+	Cardinality string `json:"cardinality"` // "one" | "many"
+}
+
+// RelationProperties 封装 Relation 的 from/to 两端
+type RelationProperties struct {
+	From RelationEnd `json:"from"`
+	To   RelationEnd `json:"to"`
+}
+
+// Relation 代表 Meta Server 返回的单个 Relation 资源
+type Relation struct {
+	Name       string             `json:"name"`
+	Type       string             `json:"type"`
+	App        string             `json:"app"`
+	Meta       map[string]any     `json:"meta"`
+	Properties RelationProperties `json:"properties"`
+}
+
 // CreateEntity 调用 MakeService.CreateResource 在指定 App 下创建 Entity
 func (c *Client) CreateEntity(name, app string, fields []Field) error {
 	body := map[string]any{
@@ -239,6 +262,88 @@ func (c *Client) DeleteEntity(name, app string) error {
 		"app":  app,
 	}
 	return c.post("MakeService.DeleteResource", "/meta/v1/entity", body)
+}
+
+// CreateRelation 调用 MakeService.CreateResource 在指定 App 下创建 Relation
+func (c *Client) CreateRelation(name, app string, props RelationProperties) error {
+	body := map[string]any{
+		"name": name,
+		"type": "Make.Relation",
+		"app":  app,
+		"meta": map[string]any{"version": "1.0.0"},
+		"properties": map[string]any{
+			"from": props.From,
+			"to":   props.To,
+		},
+	}
+	return c.post("MakeService.CreateResource", "/meta/v1/relation", body)
+}
+
+// UpdateRelation 调用 MakeService.UpdateResource 更新指定 Relation
+func (c *Client) UpdateRelation(name, app string, props RelationProperties) error {
+	body := map[string]any{
+		"name": name,
+		"type": "Make.Relation",
+		"app":  app,
+		"meta": map[string]any{"version": "1.0.0"},
+		"properties": map[string]any{
+			"from": props.From,
+			"to":   props.To,
+		},
+	}
+	return c.post("MakeService.UpdateResource", "/meta/v1/relation", body)
+}
+
+// ListRelations 调用 MakeService.ListResources 获取指定 App 下全部 Relation
+// 返回 Relation 列表和服务端 total 数量
+func (c *Client) ListRelations(app string, page, size int) ([]Relation, int, error) {
+	reqBody := map[string]any{
+		"app":        app,
+		"sort":       []map[string]any{{"field": "id", "order": "asc"}},
+		"pagination": map[string]any{"page": page, "size": size},
+	}
+	var result struct {
+		Code    int        `json:"code"`
+		Message string     `json:"msg"`
+		Data    []Relation `json:"data"`
+		Pagination struct {
+			Total int `json:"total"`
+		} `json:"pagination"`
+	}
+	if err := c.do("MakeService.ListResources", "/meta/v1/relation", reqBody, &result); err != nil {
+		return nil, 0, err
+	}
+	if result.Code != 200 {
+		return nil, 0, fmt.Errorf("API 错误 [%d]: %s", result.Code, result.Message)
+	}
+	return result.Data, result.Pagination.Total, nil
+}
+
+// GetRelation 调用 MakeService.GetResource 获取指定 Relation 的详细信息
+func (c *Client) GetRelation(app, name string) (*Relation, error) {
+	reqBody := map[string]any{"app": app, "name": name}
+	var result struct {
+		Code    int      `json:"code"`
+		Message string   `json:"msg"`
+		Data    Relation `json:"data"`
+	}
+	if err := c.do("MakeService.GetResource", "/meta/v1/relation", reqBody, &result); err != nil {
+		return nil, err
+	}
+	if result.Code != 200 {
+		return nil, fmt.Errorf("API 错误 [%d]: %s", result.Code, result.Message)
+	}
+	return &result.Data, nil
+}
+
+// DeleteRelation 调用 MakeService.DeleteResource 删除指定 Relation
+func (c *Client) DeleteRelation(name, app string) error {
+	body := map[string]any{
+		"name": name,
+		"type": "Make.Relation",
+		"app":  app,
+	}
+	return c.post("MakeService.DeleteResource", "/meta/v1/relation", body)
 }
 
 // ---------------------------------- 核心请求 ----------------------------------
