@@ -24,11 +24,20 @@ entity_delete.go:        entity delete 子命令，调用 Meta Server API（Make
 entity_delete_test.go:   覆盖 runEntityDelete 的单元测试（成功/无凭证/API错误/未知profile），用 httptest 隔离网络
 entity_list.go:         entity list 子命令，无 arg 时分页列出 app 下全部 entity（NAME/VERSION），有 arg 时显示指定 entity 详情（name/app/version + fields 表格）；支持 --app（必选）/ --profile / --server / --page / --size
 entity_list_test.go:    覆盖 runEntityList 的单元测试（列表/空列表/具体entity/无字段/无凭证/API错误/未知profile），用 httptest 隔离网络
+relation.go:                relation 命令组，挂载 create / update / delete / list 子命令
+relation_create.go:         relation create 子命令，从 JSON 文件加载 from/to，调用 Meta Server API 创建 Relation；loadRelationProperties 从 JSON 文件加载关系属性；支持 --app（必选）/ --json（必选）/ --profile
+relation_create_test.go:    覆盖 runRelationCreate 的单元测试（成功/无凭证/API错误/未知profile/非法JSON/文件不存在），用 httptest 隔离网络
+relation_update.go:         relation update 子命令，从 JSON 文件加载 from/to，调用 Meta Server API 更新 Relation；支持 --app（必选）/ --json（必选）/ --profile
+relation_update_test.go:    覆盖 runRelationUpdate 的单元测试（成功/无凭证/API错误/未知profile/非法JSON），用 httptest 隔离网络
+relation_delete.go:         relation delete 子命令，调用 Meta Server API 删除指定 Relation；支持 --app（必选）/ --profile
+relation_delete_test.go:    覆盖 runRelationDelete 的单元测试（成功/无凭证/API错误/未知profile），用 httptest 隔离网络
+relation_list.go:           relation list 子命令，无 arg 时分页列出 app 下全部 relation（NAME/FROM/TO/VERSION），有 arg 时显示指定 relation 详情；支持 --app（必选）/ --profile / --page / --size / --output
+relation_list_test.go:      覆盖 runRelationList 的单元测试（列表/空列表/JSON列表/详情/JSON详情/无凭证/API错误/未知profile/非法页码/非法格式），用 httptest 隔离网络
 apply.go:            apply 子命令，从 YAML 文件/目录批量应用资源（create-or-update 语义：App 不存在则创建/已存在则跳过，Entity 不存在则创建/已存在则调用 UpdateResource）；支持多文档 YAML 和目录扫描；支持 --profile / --server
 apply_test.go:       apply 子命令的单元测试，覆盖单文件、多文档、目录扫描、错误场景
 diff.go:             diff 子命令，对比远端 Meta Server 上的 App DSL 与本地 YAML 文件的差异；App name 从 YAML 自动推断（Make.App name 或 Entity app 字段）；分页获取全部远端 Entity，按 name 匹配后逐字段比对 type/properties；支持 -f（必选）/ --profile / --server / --output；退出码 0=无差异 1=有差异
 diff_test.go:        覆盖 diff 子命令核心逻辑的单元测试（computeDiff/fetchAllEntities/jsonDeepEqual/runDiff 错误路径），用 httptest 隔离网络
-output.go:           list 命令通用输出辅助（table|json 格式校验 + JSON 编码），被 app list / entity list 复用
+output.go:           list 命令通用输出辅助（table|json 格式校验 + JSON 编码），被 app list / entity list / relation list 复用
 stdout_test.go:      测试基础设施，提供 captureStdout 辅助函数劫持 os.Stdout 捕获输出，被各子命令测试复用
 update.go:           update 子命令，从 GitHub Releases 自更新二进制；直接 import internal/build 读取版本，委托 internal/update 执行检查和替换
 
