@@ -329,10 +329,11 @@ func compareFields(local ResourceManifest, remote *api.Entity) []FieldDiff {
 
 // localField 从 YAML manifest 提取的字段定义
 type localField struct {
-	Name       string
-	Type       string
-	Meta       map[string]any
-	Properties map[string]any
+	Name        string
+	Type        string
+	Meta        map[string]any
+	Properties  map[string]any
+	Validations map[string]any
 }
 
 // extractLocalFields 从 ResourceManifest 的 properties.fields 解析出字段列表
@@ -355,10 +356,11 @@ func extractLocalFields(m ResourceManifest) []localField {
 		name, _ := fm["name"].(string)
 		typ, _ := fm["type"].(string)
 		fields = append(fields, localField{
-			Name:       name,
-			Type:       typ,
-			Meta:       getFieldMap(fm, "meta"),
-			Properties: getFieldMap(fm, "properties"),
+			Name:        name,
+			Type:        typ,
+			Meta:        getFieldMap(fm, "meta"),
+			Properties:  getFieldMap(fm, "properties"),
+			Validations: getFieldMap(fm, "validations"),
 		})
 	}
 	return fields
@@ -372,6 +374,9 @@ func fieldChanges(local localField, remote api.Field) string {
 	// Properties 深度对比（JSON 归一化解决 int/float64 差异）
 	if !jsonDeepEqual(local.Properties, remote.Properties) {
 		return "properties changed"
+	}
+	if !jsonDeepEqual(local.Validations, remote.Validations) {
+		return "validations changed"
 	}
 	return ""
 }

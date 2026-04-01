@@ -124,10 +124,11 @@ func (c *Client) DeleteApp(name string) error {
 
 // Field 代表 Entity 下的单个字段定义
 type Field struct {
-	Name       string         `json:"name"`
-	Type       string         `json:"type"`
-	Meta       map[string]any `json:"meta"`
-	Properties map[string]any `json:"properties"`
+	Name        string         `json:"name"`
+	Type        string         `json:"type"`
+	Meta        map[string]any `json:"meta"`
+	Properties  map[string]any `json:"properties"`
+	Validations map[string]any `json:"validations,omitempty"`
 }
 
 // Entity 代表 Meta Server 返回的单个 Entity 资源

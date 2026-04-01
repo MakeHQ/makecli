@@ -246,10 +246,11 @@ func applyEntity(manifest ResourceManifest, client *api.Client) (string, error) 
 			return "", fmt.Errorf("field[%d] 必须为对象", i)
 		}
 		fields[i] = api.Field{
-			Name:       getField(fieldMap, "name").(string),
-			Type:       getField(fieldMap, "type").(string),
-			Meta:       getFieldMap(fieldMap, "meta"),
-			Properties: getFieldMap(fieldMap, "properties"),
+			Name:        getField(fieldMap, "name").(string),
+			Type:        getField(fieldMap, "type").(string),
+			Meta:        getFieldMap(fieldMap, "meta"),
+			Properties:  getFieldMap(fieldMap, "properties"),
+			Validations: getFieldMap(fieldMap, "validations"),
 		}
 	}
 
