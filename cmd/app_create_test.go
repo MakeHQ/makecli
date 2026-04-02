@@ -29,27 +29,15 @@ func TestRunAppCreate(t *testing.T) {
 		}
 	})
 
-	t.Run("creates app with custom code", func(t *testing.T) {
+	t.Run("creates app with description", func(t *testing.T) {
 		srv := newMockMeta(t, 200, "create app success")
 		defer srv.Close()
 		t.Setenv("HOME", t.TempDir())
 		saveDefaultToken(t)
 		ServerURL = srv.URL
 
-		if err := runAppCreate("myapp", "custom_code", "default"); err != nil {
-			t.Fatalf("runAppCreate with code: %v", err)
-		}
-	})
-
-	t.Run("creates app without code uses name as code", func(t *testing.T) {
-		srv := newMockMeta(t, 200, "create app success")
-		defer srv.Close()
-		t.Setenv("HOME", t.TempDir())
-		saveDefaultToken(t)
-		ServerURL = srv.URL
-
-		if err := runAppCreate("myapp", "", "default"); err != nil {
-			t.Fatalf("runAppCreate without code: %v", err)
+		if err := runAppCreate("myapp", "test app", "default"); err != nil {
+			t.Fatalf("runAppCreate with description: %v", err)
 		}
 	})
 

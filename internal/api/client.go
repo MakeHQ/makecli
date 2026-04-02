@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 依赖 bytes、encoding/json、fmt、net/http、time
- * [OUTPUT]: 对外提供 Client 类型、Option / WithDebug / WithHeaders 功能选项、New 构造函数、App / Field / Entity / EntityProperties / RelationEnd / RelationProperties / Relation 类型、CreateApp / CreateAppWithCode / ListApps / DeleteApp / GetApp / CreateEntity / ListEntities / GetEntity / UpdateEntity / DeleteEntity / CreateRelation / UpdateRelation / ListRelations / GetRelation / DeleteRelation 方法
+ * [OUTPUT]: 对外提供 Client 类型、Option / WithDebug / WithHeaders 功能选项、New 构造函数、App / Field / Entity / EntityProperties / RelationEnd / RelationProperties / Relation 类型、CreateApp / ListApps / DeleteApp / GetApp / CreateEntity / ListEntities / GetEntity / UpdateEntity / DeleteEntity / CreateRelation / UpdateRelation / ListRelations / GetRelation / DeleteRelation 方法
  * [POS]: internal/api 的核心，封装 Make Meta Service 的 HTTP 调用
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
@@ -68,20 +68,12 @@ type App struct {
 // ---------------------------------- App 操作 ----------------------------------
 
 // CreateApp 调用 MakeService.CreateResource 在 Meta Server 创建 App
-// code 默认为 name
-func (c *Client) CreateApp(name string) error {
-	return c.CreateAppWithCode(name, name)
-}
-
-// CreateAppWithCode 调用 MakeService.CreateResource 创建指定 code 的 App
-func (c *Client) CreateAppWithCode(name, code string) error {
+func (c *Client) CreateApp(name string, properties map[string]any) error {
 	body := map[string]any{
-		"name": name,
-		"type": "Make.App",
-		"meta":  map[string]any{"version": "1.0.0"},
-		"properties": map[string]any{
-			"code": code,
-		},
+		"name":       name,
+		"type":       "Make.App",
+		"meta":       map[string]any{"version": "1.0.0"},
+		"properties": properties,
 	}
 	return c.post("MakeService.CreateResource", "/meta/v1/app", body)
 }

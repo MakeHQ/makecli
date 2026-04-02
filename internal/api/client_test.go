@@ -27,7 +27,7 @@ func TestCreateApp(t *testing.T) {
 		}))
 		defer srv.Close()
 
-		if err := New(srv.URL, "test-token").CreateApp("myapp"); err != nil {
+		if err := New(srv.URL, "test-token").CreateApp("myapp", nil); err != nil {
 			t.Fatalf("CreateApp: %v", err)
 		}
 	})
@@ -38,7 +38,7 @@ func TestCreateApp(t *testing.T) {
 		}))
 		defer srv.Close()
 
-		if err := New(srv.URL, "test-token").CreateApp("myapp"); err == nil {
+		if err := New(srv.URL, "test-token").CreateApp("myapp", nil); err == nil {
 			t.Fatal("expected error on API failure")
 		}
 	})
@@ -49,7 +49,7 @@ func TestCreateApp(t *testing.T) {
 		}))
 		defer srv.Close()
 
-		if err := New(srv.URL, "test-token").CreateApp("myapp"); err == nil {
+		if err := New(srv.URL, "test-token").CreateApp("myapp", nil); err == nil {
 			t.Fatal("expected error for invalid JSON response")
 		}
 	})
@@ -168,7 +168,7 @@ func TestWithHeaders(t *testing.T) {
 		"X-Operator-ID": "op-123",
 	}
 	client := New(srv.URL, "test-token", WithHeaders(headers))
-	if err := client.CreateApp("test"); err != nil {
+	if err := client.CreateApp("test", nil); err != nil {
 		t.Fatalf("CreateApp with headers: %v", err)
 	}
 }
@@ -180,7 +180,7 @@ func TestWithDebugOption(t *testing.T) {
 	defer srv.Close()
 
 	client := New(srv.URL, "test-token", WithDebug(true))
-	if err := client.CreateApp("test"); err != nil {
+	if err := client.CreateApp("test", nil); err != nil {
 		t.Fatalf("CreateApp with debug: %v", err)
 	}
 }

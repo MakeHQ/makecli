@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 依赖 cmd/client（newClientFromProfile）、fmt、github.com/spf13/cobra
  * [OUTPUT]: 对外提供 newAppCreateCmd 函数
- * [POS]: cmd/app 的 create 子命令，调用 Meta Server API 创建 App，支持 --code 选项
+ * [POS]: cmd/app 的 create 子命令，调用 Meta Server API 创建 App，支持 --description 选项
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
  */
 
@@ -15,7 +15,7 @@ import (
 
 func newAppCreateCmd() *cobra.Command {
 	var profile string
-	var code string
+	var description string
 
 	cmd := &cobra.Command{
 		Use:          "create <name>",
@@ -23,28 +23,27 @@ func newAppCreateCmd() *cobra.Command {
 		Args:         cobra.ExactArgs(1),
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runAppCreate(args[0], code, profile)
+			return runAppCreate(args[0], description, profile)
 		},
 	}
 
 	cmd.Flags().StringVar(&profile, "profile", "default", "credentials profile to use")
-	cmd.Flags().StringVar(&code, "code", "", "app code (defaults to name)")
+	cmd.Flags().StringVar(&description, "description", "", "app description")
 	return cmd
 }
 
-func runAppCreate(name, code, profile string) error {
+func runAppCreate(name, description, profile string) error {
 	client, err := newClientFromProfile(profile)
 	if err != nil {
 		return err
 	}
 
-	var apiErr error
-	if code == "" {
-		apiErr = client.CreateApp(name) // code 默认为 name
-	} else {
-		apiErr = client.CreateAppWithCode(name, code)
+	props := map[string]any{}
+	if description != "" {
+		props["description"] = description
 	}
-	if apiErr != nil {
+
+	if apiErr := client.CreateApp(name, props); apiErr != nil {
 		return apiErr
 	}
 

@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 依赖 cmd/client（newClientFromProfile）、internal/api（Client/CreateAppWithCode/CreateEntity/GetApp/GetEntity/UpdateEntity/GetRelation/CreateRelation/UpdateRelation/Field/RelationProperties/RelationEnd）、fmt、os、path/filepath、strings、gopkg.in/yaml.v3、github.com/spf13/cobra
+ * [INPUT]: 依赖 cmd/client（newClientFromProfile）、internal/api（Client/CreateApp/CreateEntity/GetApp/GetEntity/UpdateEntity/GetRelation/CreateRelation/UpdateRelation/Field/RelationProperties/RelationEnd）、fmt、os、path/filepath、strings、gopkg.in/yaml.v3、github.com/spf13/cobra
  * [OUTPUT]: 对外提供 newApplyCmd 函数
  * [POS]: cmd 模块的顶层 apply 命令，从 YAML 文件/目录批量应用资源（create-or-update 语义）
  * [PROTOCOL]: 变更时更新此头部，然后检查 CLAUDE.md
@@ -222,17 +222,12 @@ func applyResources(resources []ResourceManifest, client *api.Client) error {
 
 // applyApp 从清单应用 App：不存在则创建，已存在则跳过（App 无 update API）
 func applyApp(manifest ResourceManifest, client *api.Client) (string, error) {
-	code, _ := manifest.Properties["code"].(string)
-	if code == "" {
-		code = manifest.Name
-	}
-
 	existing, err := client.GetApp(manifest.Name)
 	if err == nil && existing.Name != "" {
 		return "", nil // App 无 update API，静默跳过
 	}
 
-	return "created", client.CreateAppWithCode(manifest.Name, code)
+	return "created", client.CreateApp(manifest.Name, manifest.Properties)
 }
 
 // applyEntity 从清单应用 Entity：不存在则创建，已存在则更新
